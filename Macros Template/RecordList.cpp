@@ -27,7 +27,7 @@ RecordList::InputRecord& RecordList::InputRecord::operator=(RecordList::InputRec
 
 RecordList::RecordList()
 	:
-	currentRecord(RecordList::INVALIDRECORD),
+	currentRecord(RecordList::INVALID),
 	simulating(false)
 {}
 
@@ -54,12 +54,12 @@ int RecordList::SelectRecord(const RAWKEYBOARD& kbd)
 			return currentRecord = i;
 		}
 	}
-	return RecordList::INVALIDRECORD;
+	return RecordList::INVALID;
 }
 
 void RecordList::SimulateRecord()
 {
-	if (currentRecord != RecordList::INVALIDRECORD)
+	if (currentRecord != RecordList::INVALID)
 	{
 		simulating = true;
 		records[currentRecord].handler.Simulate();
@@ -93,11 +93,7 @@ bool RecordList::DeleteRecord(const std::vector<TCHAR>& toggleVKeys)
 	}
 
 	records.pop_back();
-
-	if (records.empty())
-		currentRecord = RecordList::INVALIDRECORD;
-	else
-		currentRecord = 0;
+	currentRecord = RecordList::INVALID;
 
 	return true;
 }
@@ -114,18 +110,18 @@ int RecordList::FindRecord(const std::vector<TCHAR>& toggleVKeys) const
 
 InputData* RecordList::GetBack() const
 {
-	return (currentRecord != RecordList::INVALIDRECORD) ? records[currentRecord].handler.GetBack() : nullptr;
+	return (currentRecord != RecordList::INVALID) ? records[currentRecord].handler.GetBack() : nullptr;
 }
 
 void RecordList::PopBack()
 {
-	if (currentRecord != RecordList::INVALIDRECORD)
+	if (currentRecord != RecordList::INVALID)
 		records[currentRecord].handler.PopBack();
 }
 
 void RecordList::Save()
 {
-	if (currentRecord != RecordList::INVALIDRECORD)
+	if (currentRecord != RecordList::INVALID)
 	{
 		InputHandler& handler = records[currentRecord].handler;
 		handler.Save(("Record" + handler.FormatVKeys() + ".dat").c_str());
@@ -134,19 +130,19 @@ void RecordList::Save()
 
 void RecordList::StartRecording()
 {
-	if (currentRecord != RecordList::INVALIDRECORD)
+	if (currentRecord != RecordList::INVALID)
 		records[currentRecord].handler.StartRecording();
 }
 
 void RecordList::StopRecording()
 {
-	if (currentRecord != RecordList::INVALIDRECORD)
+	if (currentRecord != RecordList::INVALID)
 		records[currentRecord].handler.StopRecording();
 }
 
 bool RecordList::IsRecording() const
 {
-	if (currentRecord != RecordList::INVALIDRECORD)
+	if (currentRecord != RecordList::INVALID)
 		return records[currentRecord].handler.IsRecording();
 	return false;
 }
@@ -157,7 +153,7 @@ bool RecordList::IsSimulating() const
 
 bool RecordList::HasRecorded() const
 {
-	if (currentRecord != RecordList::INVALIDRECORD)
+	if (currentRecord != RecordList::INVALID)
 		return records[currentRecord].handler.HasRecorded();
 	return false;
 }

@@ -5,7 +5,7 @@
 class RecordList
 {
 public:
-	static constexpr int INVALIDRECORD = -1;
+	static constexpr int INVALID = -1;
 
 	RecordList();	
 	~RecordList();

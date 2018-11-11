@@ -231,7 +231,7 @@ void SimInp::MouseMove(int x, int y, DWORD duration, DWORD freq)
 		iY = (float)y / (float)nLoops;
 	float xMove = 0.0f, yMove = 0.0f;
 
-	for (DWORD i = 1; i <= nLoops; i++)
+	for (DWORD i = 0; i < nLoops; ++i)
 	{
 		if ((int)(xMove += iX) || (int)(yMove += iY))
 		{

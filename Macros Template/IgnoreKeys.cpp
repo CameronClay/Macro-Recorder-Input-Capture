@@ -7,10 +7,6 @@ Ignorekeys::KeyEntry::KeyEntry(WORD VKey, DWORD Message, bool oneTime)
 	oneTime(oneTime)
 {}
 
-
-Ignorekeys::Ignorekeys() {}
-Ignorekeys::~Ignorekeys() {}
-
 void Ignorekeys::SetKeys(const std::vector<KeyEntry>& ignoreList)
 {
 	if (!this->ignoreList.empty())

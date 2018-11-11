@@ -33,7 +33,8 @@ static void Input(HINSTANCE hInst, RawInp& rawInp)
 	if (!wnd)
 		MessageBox(NULL, _T("Call to CreateWindowEX failed!"), wc.lpszClassName, MB_OK);
 
-	rawInp.InitializeInputDevices(wnd);
+	if(!rawInp.InitializeInputDevices(wnd))
+		MessageBox(NULL, _T("Call to InitializeInputDevices failed!"), wc.lpszClassName, MB_OK);
 
 	static constexpr uint32_t buffSize = 128;
 	char buffer[buffSize];

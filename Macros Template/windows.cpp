@@ -22,14 +22,12 @@
 
 TCHAR szWindowClass[] = _T("Macros");
 TCHAR szTitle[] = _T("Macros");
-UINT screenWidth = 600;
-UINT screenHeight = 400;
+
+const TCHAR DIRECTORY[] = _T("Records");
 
 HINSTANCE hInst;
 HWND hWnd;
 HWND textDisp;
-
-const TCHAR Directory[] = _T("Records");
 
 std::unique_ptr<RawInp> rawInput;
 
@@ -57,7 +55,6 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	LPSTR lpCmdLine,
 	int nCmdShow)
 {
-
 	WNDCLASSEX wcex;
 
 	wcex.cbSize = sizeof(WNDCLASSEX);
@@ -73,7 +70,6 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	wcex.lpszClassName = szWindowClass;
 	wcex.hIconSm = NULL; //LoadIcon(wcex.hInstance, IDI_APPLICATION);
 
-
 	if (!RegisterClassEx(&wcex))
 	{
 		MessageBox(NULL, _T("Call to RegisterClassEx failed!"), szTitle, NULL);
@@ -84,8 +80,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 	RECT rc;
 	GetWindowRect(GetDesktopWindow(), &rc);
-	screenWidth = rc.right - rc.left;
-	screenHeight = rc.bottom - rc.top;
+	const uint32_t screenWidth = rc.right - rc.left;
+	const uint32_t screenHeight = rc.bottom - rc.top;
 
 	winRect.left = 0;
 	winRect.right = screenWidth + winRect.left;
@@ -213,7 +209,7 @@ void MouseBIProc(const RAWMOUSE& mouse, DWORD delay)
 			recordList.AddEventToRecord<MouseXClickData>(false, true, false);
 		}
 
-		if (mouse.usButtonFlags & RI_MOUSE_BUTTON_5_DOWN)//side button 2
+		if (mouse.usButtonFlags & RI_MOUSE_BUTTON_5_DOWN) //side button 2
 		{
 			recordList.AddEventToRecord<MouseXClickData>(true, false, true);
 		}
@@ -221,15 +217,11 @@ void MouseBIProc(const RAWMOUSE& mouse, DWORD delay)
 		{
 			recordList.AddEventToRecord<MouseXClickData>(false, false, true);
 		}
-
-		//inputTimer.StartWatch();
 	}
 }
 
 void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 {
-	//inputTimer.StopWatch();
-	//const double time = inputTimer.GetTimeMilli();
 	const int previousRecord = recordList.GetCurrentRecord();
 
 	if (comboRec.GetRecordType() == KeyComboRec::RECORDING)
@@ -303,7 +295,7 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 			outStrings.RemoveString(_T("Recording...."));
 			RedrawWindow(::hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
 		}
-		else if(recordList.GetCurrentRecord() != RecordList::INVALIDRECORD)
+		else if(recordList.GetCurrentRecord() != RecordList::INVALID)
 		{
 			ignoreKeys.SetKeys({ { VK_CONTROL, WM_KEYUP, true }, { VK_F1, WM_KEYUP, true } });
 
@@ -402,9 +394,6 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 			}
 			recordList.AddEventToRecord<KbdData>(kbd.MakeCode, kbd.Flags == RI_KEY_MAKE, true);
 		}
-
-		//inputTimer.Reset();
-		//inputTimer.StartWatch();
 	}
 }
 
@@ -429,9 +418,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		MMRESULT res = timeBeginPeriod(tc.wPeriodMin);
 		assert(res == TIMERR_NOERROR);
 
-		if (!File::Exists(Directory))
-			File::CreateFolder(Directory);
-		File::SetCurDirectory(Directory);
+		if (!File::Exists(DIRECTORY))
+			File::CreateFolder(DIRECTORY);
+		File::SetCurDirectory(DIRECTORY);
 
 		recordList.Initialize("");
 		

@@ -14,8 +14,7 @@ public:
 		bool oneTime;
 	};
 
-	Ignorekeys();
-	~Ignorekeys();
+	Ignorekeys() = default;
 
 	void SetKeys(const std::vector<KeyEntry>& ignoreList);
 	void SetKeys(std::initializer_list<KeyEntry> ignoreList);
