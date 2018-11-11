@@ -70,7 +70,7 @@ static void Input(HINSTANCE hInst, RawInp& rawInp)
 }
 
 
-RawInp::RawInp(HINSTANCE hInst, MouseProc mouseProc, KeyboardProc kbdProc)
+RawInp::RawInp(HINSTANCE hInst, MOUSEPROC mouseProc, KEYBOARDPROC kbdProc)
 	:
 	thrd(&::Input, hInst, std::ref(*this)),
 	mouseProc(mouseProc),

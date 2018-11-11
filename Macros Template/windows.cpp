@@ -412,11 +412,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 	case WM_CREATE:
 	{
-		TIMECAPS tc = {};
-		timeGetDevCaps(&tc, sizeof(TIMECAPS));
+		//TIMECAPS tc = {};
+		//timeGetDevCaps(&tc, sizeof(TIMECAPS));
 
-		MMRESULT res = timeBeginPeriod(tc.wPeriodMin);
-		assert(res == TIMERR_NOERROR);
+		//MMRESULT res = timeBeginPeriod(tc.wPeriodMin);
+		//assert(res == TIMERR_NOERROR);
 
 		if (!File::Exists(DIRECTORY))
 			File::CreateFolder(DIRECTORY);
@@ -493,7 +493,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	}	break;
 
 	case WM_DESTROY:
-		timeEndPeriod(1);
+		//timeEndPeriod(1);
 
 		PostQuitMessage(0);
 		break;

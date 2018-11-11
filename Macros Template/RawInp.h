@@ -4,13 +4,13 @@
 #include <thread>
 #include "Function.h"
 
-using MouseProc = PFunc<void, const RAWMOUSE&, DWORD>;
-using KeyboardProc = PFunc<void, const RAWKEYBOARD&, DWORD>;
+using MOUSEPROC = PFunc<void, const RAWMOUSE&, DWORD>;
+using KEYBOARDPROC = PFunc<void, const RAWKEYBOARD&, DWORD>;
 
 class RawInp
 {
 public:
-	RawInp(HINSTANCE hInst, MouseProc mouseProc = nullptr, KeyboardProc kbdProc = nullptr);
+	RawInp(HINSTANCE hInst, MOUSEPROC mouseProc = nullptr, KEYBOARDPROC kbdProc = nullptr);
 	~RawInp();
 
 	bool InitializeInputDevices(HWND wnd);
@@ -19,6 +19,6 @@ public:
 private:
 	std::thread thrd;
 	HWND wnd;
-	MouseProc mouseProc;
-	KeyboardProc kbdProc;
+	MOUSEPROC mouseProc;
+	KEYBOARDPROC kbdProc;
 };

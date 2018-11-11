@@ -70,7 +70,7 @@ void RecordList::SimulateRecord()
 bool RecordList::AddRecord(const std::vector<TCHAR>& toggleVKeys)
 {
 	const int index = FindRecord(toggleVKeys);
-	if (index != -1)
+	if (index != RecordList::INVALID)
 		return false;
 
 	currentRecord = records.size();
@@ -81,7 +81,7 @@ bool RecordList::AddRecord(const std::vector<TCHAR>& toggleVKeys)
 bool RecordList::DeleteRecord(const std::vector<TCHAR>& toggleVKeys)
 {
 	const int index = FindRecord(toggleVKeys);
-	if (index == -1)
+	if (index == RecordList::INVALID)
 		return false;
 
 	remove(records[index].filename.c_str());
@@ -105,7 +105,7 @@ int RecordList::FindRecord(const std::vector<TCHAR>& toggleVKeys) const
 		if (records[i].handler == toggleVKeys)
 			return i;
 	}
-	return -1;
+	return RecordList::INVALID;
 }
 
 InputData* RecordList::GetBack() const
