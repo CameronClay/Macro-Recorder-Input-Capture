@@ -80,6 +80,7 @@ RawInp::RawInp(HINSTANCE hInst, MOUSEPROC mouseProc, KEYBOARDPROC kbdProc)
 RawInp::~RawInp()
 {
 	PostMessage(wnd, WM_CLOSE, NULL, NULL);
+	thrd.join();
 }
 
 bool RawInp::InitializeInputDevices(HWND wnd)

@@ -333,7 +333,7 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 	}
 
 	// Exit program
-	if (CheckKey::VKComboDown(kbd, { VK_CONTROL, VK_ESCAPE })) // for some reason a VK_ESCAPE with WM_KEYDOWN is not triggered when ctrl is pressed...
+	if (CheckKey::VKComboDown(kbd, { VK_CONTROL, /*VK_ESCAPE*/VK_DOWN })) // for some reason a VK_ESCAPE with WM_KEYDOWN is not triggered when ctrl is pressed...
 	{
 		if (!(recordList.IsRecording() || recordList.IsSimulating()))
 		{
