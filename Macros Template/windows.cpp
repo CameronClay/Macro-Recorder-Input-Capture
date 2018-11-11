@@ -1,7 +1,6 @@
 #include "Keys.h"
 #include "RawInp.h"
 #include "SimInp.h"
-#include "Timer.h"
 #include "InputHandler.h"
 #include "CheckKey.h"
 #include "RecordList.h"

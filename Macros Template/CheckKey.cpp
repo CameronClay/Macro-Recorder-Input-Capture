@@ -44,7 +44,7 @@ bool CheckKey::SCComboDown(const RAWKEYBOARD& kbd, std::initializer_list<WORD> v
 
 bool CheckKey::VKComboDown(const RAWKEYBOARD& kbd, const std::vector<TCHAR>& vKeys)
 {
-	if ((kbd.VKey == *(vKeys.end() - 1))/* && (kbd.Message == WM_KEYDOWN)*/)
+	if ((kbd.VKey == *(vKeys.end() - 1)) && (kbd.Message == WM_KEYDOWN))
 	{
 		for (auto it = vKeys.begin(), end = vKeys.end() - 1; it != end; ++it)
 			if (!(GetAsyncKeyState(*it) & 0x8000))
@@ -55,7 +55,7 @@ bool CheckKey::VKComboDown(const RAWKEYBOARD& kbd, const std::vector<TCHAR>& vKe
 }
 bool CheckKey::SCComboDown(const RAWKEYBOARD& kbd, const std::vector<WORD>& vKeys)
 {
-	if ((kbd.MakeCode == *(vKeys.end() - 1))/* && (kbd.Flags == RI_KEY_BREAK)*/)
+	if ((kbd.MakeCode == *(vKeys.end() - 1)) && (kbd.Flags == RI_KEY_BREAK))
 	{
 		for (auto it = vKeys.begin(), end = vKeys.end() - 1; it != end; ++it)
 			if (!(GetAsyncKeyState(keys.ScanCodeToVirtualKey(*it)) & 0x8000))

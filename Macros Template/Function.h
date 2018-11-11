@@ -2,6 +2,15 @@
 #include <stdlib.h>
 #include <functional>
 
+template<typename Rtn, typename... Args>
+using PFunc = Rtn(*)(Args...);
+
+template<typename Rtn, typename O, typename... Args>
+using PMFunc = Rtn(O::*)(Args...);
+
+template<typename Rtn, typename O, typename... Args>
+using PMFuncC = Rtn(O::*)(Args...) const;
+
 template<typename RT>
 class Function
 {
