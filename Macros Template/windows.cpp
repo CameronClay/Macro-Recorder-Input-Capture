@@ -52,8 +52,6 @@ void MouseBIProc(const RAWMOUSE& mouse, DWORD delay);
 void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay);
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
-LRESULT CALLBACK KbdInputProc(HWND, UINT, WPARAM, LPARAM);
-LRESULT CALLBACK MouseInputProc(HWND, UINT, WPARAM, LPARAM);
 
 int WINAPI WinMain(HINSTANCE hInstance,
 	HINSTANCE hPrevInstance,
