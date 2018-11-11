@@ -147,7 +147,6 @@
     <ClInclude Include="RecordList.h" />
     <ClInclude Include="Keys.h" />
     <ClInclude Include="RawInp.h" />
-    <ClInclude Include="InputTypes.h" />
     <ClInclude Include="SimInp.h" />
     <ClInclude Include="PFunc.h" />
     <ClInclude Include="StringHashMap.h" />

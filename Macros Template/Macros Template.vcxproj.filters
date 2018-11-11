@@ -71,9 +71,6 @@
     <ClInclude Include="Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="InputTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="PFunc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
