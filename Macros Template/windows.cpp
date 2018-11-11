@@ -294,6 +294,10 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 	{
 		if (recordList.IsRecording())
 		{
+			// Remove CTRL + F1 release from list
+			recordList.PopBack();
+			recordList.PopBack();
+
 			recordList.Save();
 
 			outStrings.RemoveString(_T("Recording...."));
@@ -302,11 +306,13 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 		else if(recordList.GetCurrentRecord() != RecordList::INVALIDRECORD)
 		{
 			ignoreKeys.SetKeys({ { VK_CONTROL, WM_KEYUP, true }, { VK_F1, WM_KEYUP, true } });
+
 			//Set starting mouse position
-			POINT pt;
+			/*POINT pt;
 			GetCursorPos(&pt);
 			int mx = (pt.x * USHRT_MAX) / screenWidth;
-			int my = (pt.y * USHRT_MAX) / screenHeight;
+			int my = (pt.y * USHRT_MAX) / screenHeight;*/
+
 			outStrings.AddString(_T("Recording...."));
 			RedrawWindow(::hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
 
