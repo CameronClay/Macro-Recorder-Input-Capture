@@ -212,8 +212,6 @@ bool SimInp::SendXClick(bool xButton1, bool xButton2, DWORD delayMilli)
 		INPUT input[]{ { INPUT_MOUSE }, { INPUT_MOUSE } };
 		input[0].mi = { 0, 0, data, MOUSEEVENTF_XDOWN, 0, NULL };
 		input[1].mi = { 0, 0, data, MOUSEEVENTF_XUP, 0, NULL };
-
-		return SendInput(2, input, sizeof(INPUT)) == 2;
 	}
 }
 
