@@ -1,4 +1,5 @@
 #include "IgnoreKeys.h"
+#include <algorithm>
 
 Ignorekeys::KeyEntry::KeyEntry(WORD VKey, DWORD Message, bool oneTime)
 	:
@@ -28,19 +29,19 @@ bool Ignorekeys::KeyIgnored(const RAWKEYBOARD& kbd)
 	if (ignoreList.empty())
 		return false;
 
-	for (int i = 0, size = ignoreList.size(); i < size; ++i)
-	{
-		if ((kbd.VKey == ignoreList[i].VKey) && (kbd.Message == ignoreList[i].Message))
-		{
-			if (ignoreList[i].oneTime)
-			{
-				if (i != size - 1)
-					ignoreList[i] = ignoreList.back();
+	auto it = std::find_if(ignoreList.begin(), ignoreList.end(), 
+		[&kbd](const KeyEntry& e) {return ((kbd.VKey == e.VKey) && (kbd.Message == e.Message)); });
 
-				ignoreList.pop_back();
-			}
-			return true;
+	if ((it != ignoreList.end()))
+	{
+		if (it->oneTime)
+		{
+			if(it != (ignoreList.end() - 1))
+				*it = ignoreList.back();
+
+			ignoreList.pop_back();
 		}
+		return true;
 	}
 	return false;
 }

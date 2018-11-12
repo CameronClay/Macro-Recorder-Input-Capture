@@ -418,11 +418,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		//MMRESULT res = timeBeginPeriod(tc.wPeriodMin);
 		//assert(res == TIMERR_NOERROR);
 
-		if (!File::Exists(DIRECTORY))
-			File::CreateFolder(DIRECTORY);
-		File::SetCurDirectory(DIRECTORY);
+		if (!fs::exists(DIRECTORY))
+			fs::create_directory(DIRECTORY);
 
-		recordList.Initialize("");
+		const std::string dir = fs::current_path().string() + _T('/') + DIRECTORY;
+		fs::current_path(dir);
+
+		recordList.Initialize(_T("./"));
 		
 		rawInput = std::make_unique<RawInp>(hInst, MouseBIProc, KbdBIProc);
 

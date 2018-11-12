@@ -35,7 +35,7 @@ RecordList::~RecordList(){}
 
 bool RecordList::Initialize(const TCHAR* workingDir)
 {
-	auto fileList = File::GetFileNameList(workingDir);
+	auto fileList = File::GetFileList(workingDir);
 	for (size_t i = 0, size = fileList.size(); i < size; ++i)
 	{
 		records.emplace_back();
@@ -84,11 +84,11 @@ bool RecordList::DeleteRecord(const std::vector<TCHAR>& toggleVKeys)
 	if (index == RecordList::INVALID)
 		return false;
 
-	remove(records[index].filename.c_str());
+	fs::remove(records[index].filename.c_str());
 
 	if (index != (records.size() - 1))
 	{
-		rename(records.back().filename.c_str(), records[index].filename.c_str());
+		fs::rename(records.back().filename.c_str(), records[index].filename.c_str());
 		records[index] = std::move(records.back());
 	}
 

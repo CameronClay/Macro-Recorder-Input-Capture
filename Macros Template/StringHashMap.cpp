@@ -20,10 +20,11 @@ bool StringHashMap::RemoveString(const std::string& str)
 	Lock();
 	const size_t res = RemoveStringNL(str);
 	Unlock();
+
 	return res;
 }
 
-std::unordered_map <std::string, StringHashMap::EMPTY_STRUCT>& StringHashMap::GetOutStrings()
+std::unordered_map<std::string, StringHashMap::EMPTY_STRUCT>& StringHashMap::GetOutStrings()
 {
 	return outStrings;
 }

@@ -19,8 +19,8 @@ public:
 	void Lock();
 	void Unlock();
 
-	std::unordered_map <std::string, EMPTY_STRUCT>& GetOutStrings();
+	std::unordered_map<std::string, EMPTY_STRUCT>& GetOutStrings();
 private:
-	std::unordered_map <std::string, EMPTY_STRUCT> outStrings;
+	std::unordered_map<std::string, EMPTY_STRUCT> outStrings;
 	std::mutex mut;
 };

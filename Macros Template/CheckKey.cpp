@@ -21,7 +21,7 @@ bool CheckKey::SCRelease(const RAWKEYBOARD& kbd, WORD scanCode)
 
 bool CheckKey::VKComboDown(const RAWKEYBOARD& kbd, std::initializer_list<TCHAR> vKeys)
 {
-	if ((kbd.VKey == *(vKeys.end() - 1)) && (kbd.Message == WM_KEYDOWN))
+	if ((vKeys.size() != 0) && (kbd.VKey == *(vKeys.end() - 1)) && (kbd.Message == WM_KEYDOWN))
 	{
 		for (auto it = vKeys.begin(), end = vKeys.end() - 1; it != end; ++it)
 			if (!(GetAsyncKeyState(*it) & 0x8000))
@@ -30,11 +30,11 @@ bool CheckKey::VKComboDown(const RAWKEYBOARD& kbd, std::initializer_list<TCHAR> 
 	}
 	return false;
 }
-bool CheckKey::SCComboDown(const RAWKEYBOARD& kbd, std::initializer_list<WORD> vKeys)
+bool CheckKey::SCComboDown(const RAWKEYBOARD& kbd, std::initializer_list<WORD> sKeys)
 {
-	if ((kbd.MakeCode == *(vKeys.end() - 1)) && (kbd.Flags == RI_KEY_BREAK))
+	if ((sKeys.size() != 0) && (kbd.MakeCode == *(sKeys.end() - 1)) && (kbd.Flags == RI_KEY_BREAK))
 	{
-		for (auto it = vKeys.begin(), end = vKeys.end() - 1; it != end; ++it)
+		for (auto it = sKeys.begin(), end = sKeys.end() - 1; it != end; ++it)
 			if (!(GetAsyncKeyState(keys.ScanCodeToVirtualKey(*it)) & 0x8000))
 				return false;
 		return true;
@@ -44,7 +44,7 @@ bool CheckKey::SCComboDown(const RAWKEYBOARD& kbd, std::initializer_list<WORD> v
 
 bool CheckKey::VKComboDown(const RAWKEYBOARD& kbd, const std::vector<TCHAR>& vKeys)
 {
-	if ((kbd.VKey == *(vKeys.end() - 1)) && (kbd.Message == WM_KEYDOWN))
+	if ((vKeys.size() != 0) && (kbd.VKey == *(vKeys.end() - 1)) && (kbd.Message == WM_KEYDOWN))
 	{
 		for (auto it = vKeys.begin(), end = vKeys.end() - 1; it != end; ++it)
 			if (!(GetAsyncKeyState(*it) & 0x8000))
@@ -53,11 +53,11 @@ bool CheckKey::VKComboDown(const RAWKEYBOARD& kbd, const std::vector<TCHAR>& vKe
 	}
 	return false;
 }
-bool CheckKey::SCComboDown(const RAWKEYBOARD& kbd, const std::vector<WORD>& vKeys)
+bool CheckKey::SCComboDown(const RAWKEYBOARD& kbd, const std::vector<WORD>& sKeys)
 {
-	if ((kbd.MakeCode == *(vKeys.end() - 1)) && (kbd.Flags == RI_KEY_BREAK))
+	if ((sKeys.size() != 0) && (kbd.MakeCode == *(sKeys.end() - 1)) && (kbd.Flags == RI_KEY_BREAK))
 	{
-		for (auto it = vKeys.begin(), end = vKeys.end() - 1; it != end; ++it)
+		for (auto it = sKeys.begin(), end = sKeys.end() - 1; it != end; ++it)
 			if (!(GetAsyncKeyState(keys.ScanCodeToVirtualKey(*it)) & 0x8000))
 				return false;
 		return true;
