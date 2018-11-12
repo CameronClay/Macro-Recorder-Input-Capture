@@ -231,6 +231,24 @@ void MouseBIProc(const RAWMOUSE& mouse, DWORD delay)
 
 void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 {
+	if (/*!(bool)(kbd.Flags & RI_KEY_BREAK) && */(kbd.MakeCode == keys.VirtualKeyToScanCode(VK_TAB)))
+	{
+		if (GetAsyncKeyState(VK_TAB) & 0x8000)
+		{
+			int a = 0;
+		}
+	}
+	if (/*((kbd.Message == WM_KEYDOWN) || (kbd.Message == WM_SYSKEYDOWN)) && */(kbd.VKey == VK_TAB))
+	{
+		int a = 0;
+	}
+		
+	/*if (kbd.Flags & RI_KEY_E0)
+		kbd.MakeCode |= 0xE000;
+
+	else if (kbd.Flags & RI_KEY_E1) 
+		kbd.MakeCode |= 0xE100;*/
+
 	const int previousRecord = recordList.GetCurrentRecord();
 
 	if (comboRec.GetRecordType() == KeyComboRec::RECORDING)
@@ -240,7 +258,7 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 			comboRec.AddVKey(kbd.VKey);
 			return;
 		}
-		else if (comboRec.HasRecorded())
+		else if (comboRec.HasRecorded())	
 		{
 			comboRec.Stop();
 			if (!recordList.AddRecord(comboRec.GetVKeys()))
@@ -404,6 +422,7 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 			}
 
 			recordList.AddEventToRecord<KbdData>(kbd.MakeCode, !(bool)(kbd.Flags & RI_KEY_BREAK), true, (bool)(kbd.Flags & RI_KEY_E0));
+			//recordList.AddEventToRecord<KbdData>(kbd.VKey, (kbd.Message == WM_KEYDOWN) || (kbd.Message == WM_SYSKEYDOWN), false);
 		}
 	}
 }

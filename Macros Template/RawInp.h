@@ -14,11 +14,17 @@ public:
 	~RawInp();
 
 	bool InitializeInputDevices(HWND wnd);
-	void SendMouseProc(const RAWMOUSE& mouse, DWORD delay);
-	void SendKbdProc(const RAWKEYBOARD& kbd, DWORD delay);
+	void SendMouseProc(const RAWMOUSE& mouse, DWORD delay) const;
+	void SendKbdProc(const RAWKEYBOARD& kbd, DWORD delay) const;
+	void UpdateTimeStamp(DWORD t);
+
 private:
+	friend LRESULT CALLBACK RawInputProcCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	LRESULT CALLBACK RawInputProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
 	std::thread thrd;
 	HWND wnd;
 	MOUSEPROC mouseProc;
 	KEYBOARDPROC kbdProc;
+	DWORD prevTime, curTime;
 };
