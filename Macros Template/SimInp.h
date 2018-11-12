@@ -15,11 +15,11 @@ namespace SimInp
 	void SendKbd(const TCHAR* str, int len);
 
 	//--Scan Codes
-	bool SendKbdDownSC(WORD key);
-	bool SendKbdUpSC(WORD key);
-	bool SendKbdSC(WORD key, DWORD delayMilli = 0);
-	void KeyComboSC(std::initializer_list<WORD> keys);
-	void KeyComboSC(const std::vector<WORD>& keys);
+	bool SendKbdDownSC(WORD key, bool E0 = false);
+	bool SendKbdUpSC(WORD key, bool E0 = false);
+	bool SendKbdSC(WORD key, bool E0 = false, DWORD delayMilli = 0);
+	void KeyComboSC(std::initializer_list<std::pair<WORD, bool>> keys);
+	void KeyComboSC(const std::vector<std::pair<WORD, bool>>& keys);
 	void SendKbdSC(const TCHAR* str, int len);
 
 	//-Mouse Functions

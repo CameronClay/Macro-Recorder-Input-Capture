@@ -52,6 +52,8 @@ HBRUSH clrb = NULL;
 HFONT hf = NULL;
 RECT winRect;
 
+uint32_t screenWidth, screenHeight;
+
 void MouseBIProc(const RAWMOUSE& mouse, DWORD delay);
 void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay);
 
@@ -87,8 +89,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 	RECT rc;
 	GetWindowRect(GetDesktopWindow(), &rc);
-	const uint32_t screenWidth = rc.right - rc.left;
-	const uint32_t screenHeight = rc.bottom - rc.top;
+	screenWidth = rc.right - rc.left;
+	screenHeight = rc.bottom - rc.top;
 
 	winRect.left = 0;
 	winRect.right = screenWidth + winRect.left;
@@ -307,15 +309,16 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 			ignoreKeys.SetKeys({ { VK_CONTROL, WM_KEYUP, true }, { VK_F1, WM_KEYUP, true } });
 
 			//Set starting mouse position
-			/*POINT pt;
+			POINT pt;
 			GetCursorPos(&pt);
 			int mx = (pt.x * USHRT_MAX) / screenWidth;
-			int my = (pt.y * USHRT_MAX) / screenHeight;*/
+			int my = (pt.y * USHRT_MAX) / screenHeight;
 
 			outStrings.AddString(RECORDING);
 			RedrawWindow(::hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
 
 			recordList.StartRecording();
+			recordList.AddEventToRecord<MouseMoveData>(mx, my, true);
 			//recordList.AddEventToRecord<MouseMoveData>(mx, my, true);
 
 			//inputTimer.StartWatch();
@@ -399,7 +402,8 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 						recordList.AddEventToRecord<DelayData>(delay);
 				}
 			}
-			recordList.AddEventToRecord<KbdData>(kbd.MakeCode, kbd.Flags == RI_KEY_MAKE, true);
+
+			recordList.AddEventToRecord<KbdData>(kbd.MakeCode, !(bool)(kbd.Flags & RI_KEY_BREAK), true, (bool)(kbd.Flags & RI_KEY_E0));
 		}
 	}
 }

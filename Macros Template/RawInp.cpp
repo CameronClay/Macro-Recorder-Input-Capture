@@ -40,7 +40,7 @@ static void Input(HINSTANCE hInst, RawInp& rawInp)
 	char buffer[buffSize];
 	DWORD prevTime = 0;
 
-	MSG msg = {};
+	MSG msg {};
 	while (GetMessage(&msg, 0, 0, 0))
 	{
 		if (msg.message == WM_INPUT)

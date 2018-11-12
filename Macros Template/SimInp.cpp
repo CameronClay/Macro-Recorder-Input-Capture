@@ -77,33 +77,33 @@ void SimInp::SendKbd(const TCHAR* str, int len)
 		SimInp::SendKbd(keys.CharToVirtualKey(str[i]));
 }
 
-bool SimInp::SendKbdDownSC(WORD key)
+bool SimInp::SendKbdDownSC(WORD key, bool E0)
 {
 	INPUT input{ INPUT_KEYBOARD };
-	input.ki = { NULL, key, KEYEVENTF_SCANCODE, 0, NULL };
+	input.ki = { 0, key, (E0 ? KEYEVENTF_EXTENDEDKEY : 0UL) | KEYEVENTF_SCANCODE, 0, NULL };
 	return SendInput(1, &input, sizeof(INPUT)) == 1;
 }
 
-bool SimInp::SendKbdUpSC(WORD key)
+bool SimInp::SendKbdUpSC(WORD key, bool E0)
 {
 	INPUT input{ INPUT_KEYBOARD };
-	input.ki = { NULL, key, KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP, 0, NULL };
+	input.ki = { 0, key, (E0 ? KEYEVENTF_EXTENDEDKEY : 0UL) | KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP, 0, NULL };
 	return SendInput(1, &input, sizeof(INPUT)) == 1;
 }
 
-bool SimInp::SendKbdSC(WORD key, DWORD delayMilli)
+bool SimInp::SendKbdSC(WORD key, bool E0, DWORD delayMilli)
 {
 	if (delayMilli)
 	{
-		bool res = SendKbdDownSC(key);
+		bool res = SendKbdDownSC(key, E0);
 		std::this_thread::sleep_for(std::chrono::milliseconds(delayMilli));
-		return res & SendKbdUpSC(key);
+		return res & SendKbdUpSC(key, E0);
 	}
 	else
 	{
 		INPUT input[]{ { INPUT_KEYBOARD }, { INPUT_KEYBOARD } };
-		input[0].ki = { NULL, key, KEYEVENTF_SCANCODE, 0, NULL };
-		input[1].ki = { NULL, key, KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP, 0, NULL };
+		input[0].ki = { 0, key, (E0 ? KEYEVENTF_EXTENDEDKEY : 0UL) | KEYEVENTF_SCANCODE, 0, NULL };
+		input[1].ki = { 0, key, (E0 ? KEYEVENTF_EXTENDEDKEY : 0UL) | KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP, 0, NULL };
 		return SendInput(2, input, sizeof(INPUT)) == 2;
 	}
 }
@@ -111,39 +111,39 @@ bool SimInp::SendKbdSC(WORD key, DWORD delayMilli)
 void SimInp::SendKbdSC(const TCHAR* str, int len)
 {
 	for (UINT i = 0; i < len; i++)
-		SimInp::SendKbdSC(keys.CharToScanCode(str[i]));
+		SimInp::SendKbdSC(keys.CharToScanCode(str[i]), false);
 }
 
-void SimInp::KeyComboSC(std::initializer_list<WORD> keys)
+void SimInp::KeyComboSC(std::initializer_list<std::pair<WORD, bool>> keys)
 {
 	const auto size = keys.size();
 	std::unique_ptr<INPUT[]> input = std::make_unique<INPUT[]>(size);
 	for (auto i = 0; i < size; i++)
 	{
 		input[i].type = INPUT_KEYBOARD;
-		input[i].ki = { NULL, *(keys.begin() + i), KEYEVENTF_SCANCODE, 0, NULL };
+		input[i].ki = { 0, (keys.begin() + i)->first, ((keys.begin() + i)->second ? KEYEVENTF_EXTENDEDKEY : 0UL) | KEYEVENTF_SCANCODE, 0, NULL };
 	}
 	SendInput(size, input.get(), sizeof(INPUT));
 
 	for (auto i = 0; i < size; i++)
-		input[i].ki.dwFlags = KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP;
+		input[i].ki.dwFlags = ((keys.begin() + i)->second ? KEYEVENTF_EXTENDEDKEY : 0UL) | KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP;
 
 	SendInput(size, input.get(), sizeof(INPUT));
 }
 
-void SimInp::KeyComboSC(const std::vector<WORD>& keys)
+void SimInp::KeyComboSC(const std::vector<std::pair<WORD, bool>>& keys)
 {
 	const auto size = keys.size();
 	std::unique_ptr<INPUT[]> input = std::make_unique<INPUT[]>(size);
 	for (auto i = 0; i < size; i++)
 	{
 		input[i].type = INPUT_KEYBOARD;
-		input[i].ki = { NULL, *(keys.begin() + i), KEYEVENTF_SCANCODE, 0, NULL };
+		input[i].ki = { 0, (keys.begin() + i)->first, ((keys.begin() + i)->second ? KEYEVENTF_EXTENDEDKEY : 0UL) | KEYEVENTF_SCANCODE, 0, NULL };
 	}
 	SendInput(size, input.get(), sizeof(INPUT));
 
 	for (auto i = 0; i < size; i++)
-		input[i].ki.dwFlags = KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP;
+		input[i].ki.dwFlags = ((keys.begin() + i)->second ? KEYEVENTF_EXTENDEDKEY : 0UL) | KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP;
 
 	SendInput(size, input.get(), sizeof(INPUT));
 }

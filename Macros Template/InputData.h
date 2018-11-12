@@ -57,12 +57,12 @@ struct MouseScrollData
 struct KbdData
 {
 	static constexpr int uuid = 5;
-	KbdData(WORD key, bool down, bool sc);
+	KbdData(WORD key, bool down, bool sc, bool E0);
 	KbdData() = default;
 	KbdData(const KbdData&) = default;
 
 	WORD key;
-	bool down, sc;
+	bool down, sc, E0;
 };
 
 

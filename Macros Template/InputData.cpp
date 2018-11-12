@@ -42,11 +42,12 @@ MouseScrollData::MouseScrollData(int nClicks)
 	nClicks(nClicks)
 {}
 
-KbdData::KbdData(WORD key, bool down, bool sc)
+KbdData::KbdData(WORD key, bool down, bool sc, bool E0)
 	:
 	key(key),
 	down(down),
-	sc(sc)
+	sc(sc),
+	E0(E0)
 {}
 
 
@@ -89,6 +90,7 @@ void SaveVisitor::operator()(KbdData const& d)
 	os.write((char*)&d.key, sizeof(WORD));
 	os.write((char*)&d.down, sizeof(bool));
 	os.write((char*)&d.sc, sizeof(bool));
+	os.write((char*)&d.E0, sizeof(bool));
 }
 
 void SimulateVisitor::operator()(DelayData const& d)
@@ -122,9 +124,9 @@ void SimulateVisitor::operator()(KbdData const& d)
 	if (d.sc)
 	{
 		if (d.down)
-			SimInp::SendKbdDownSC(d.key);
+			SimInp::SendKbdDownSC(d.key, d.E0);
 		else
-			SimInp::SendKbdUpSC(d.key);
+			SimInp::SendKbdUpSC(d.key, d.E0);
 	}
 	else
 	{
@@ -169,4 +171,5 @@ void ReadVisitor::operator()(KbdData const& d)
 	is.read((char*)&d.key, sizeof(WORD));
 	is.read((char*)&d.down, sizeof(bool));
 	is.read((char*)&d.sc, sizeof(bool));
+	is.read((char*)&d.E0, sizeof(bool));
 }
