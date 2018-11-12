@@ -1,14 +1,12 @@
 #pragma once
-#include <unordered_map>
+#include <unordered_set>
 #include <mutex>
 #include <string>
 
-class StringHashMap
+class StringSet
 {
 public:
-	struct EMPTY_STRUCT{};
-
-	StringHashMap() = default;
+	StringSet() = default;
 
 	void AddString(const std::string& str);
 	bool RemoveString(const std::string& str);
@@ -19,8 +17,8 @@ public:
 	void Lock();
 	void Unlock();
 
-	std::unordered_map<std::string, EMPTY_STRUCT>& GetOutStrings();
+	std::unordered_set<std::string>& GetOutStrings();
 private:
-	std::unordered_map<std::string, EMPTY_STRUCT> outStrings;
+	std::unordered_set<std::string> outStrings;
 	std::mutex mut;
 };

@@ -5,7 +5,7 @@
 #include "CheckKey.h"
 #include "RecordList.h"
 #include "KeyComboRec.h"
-#include "StringHashMap.h"
+#include "StringSet.h"
 #include "IgnoreKeys.h"
 #include "File.h"
 #include <stdlib.h>
@@ -25,6 +25,13 @@ TCHAR szTitle[] = _T("Macros");
 
 const TCHAR DIRECTORY[] = _T("Records");
 
+const TCHAR INSTRUCTIONS[] = _T("| SELECT / TOGGLE_REC - CTRL + F1 | SIM - CTRL + F2 | ADD - CTRL + MENU + A | DEL - CTRL + MENU + D | EXIT - CTRL + ESC | ");
+const TCHAR ADDINGRECORD[] = _T("Adding Record... waiting for key combination");
+const TCHAR DELETINGRECORD[] = _T("Deleting Record... waiting for key combination");
+const TCHAR RECORDING[] = _T("Recording....");
+const TCHAR SIMUALTINGRECORD[] = _T("Simulating Record...");
+const TCHAR CURRENTRECORD[] = _T("Current Record = ");
+
 HINSTANCE hInst;
 HWND hWnd;
 HWND textDisp;
@@ -34,7 +41,7 @@ std::unique_ptr<RawInp> rawInput;
 KeyComboRec comboRec;
 RecordList recordList;
 Ignorekeys ignoreKeys;
-StringHashMap outStrings;
+StringSet outStrings;
 
 COLORREF bckClr = RGB(255, 255, 255);
 COLORREF colorKey = bckClr;
@@ -241,11 +248,11 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 			}
 
 			outStrings.Lock();
-			outStrings.RemoveStringNL(_T("Adding Record... waiting for key combination"));
+			outStrings.RemoveStringNL(ADDINGRECORD);
 			
-			outStrings.RemoveStringNL(_T("Current Record = ") + std::to_string(previousRecord));
+			outStrings.RemoveStringNL(CURRENTRECORD + std::to_string(previousRecord));
 
-			outStrings.AddStringNL(_T("Current Record = ") + std::to_string(recordList.GetCurrentRecord()));
+			outStrings.AddStringNL(CURRENTRECORD + std::to_string(recordList.GetCurrentRecord()));
 			outStrings.Unlock();
 
 			RedrawWindow(::hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
@@ -269,11 +276,11 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 			}
 
 			outStrings.Lock();
-			outStrings.RemoveStringNL(_T("Deleting Record... waiting for key combination"));
+			outStrings.RemoveStringNL(DELETINGRECORD);
 
-			outStrings.RemoveStringNL(_T("Current Record = ") + std::to_string(previousRecord));
+			outStrings.RemoveStringNL(CURRENTRECORD + std::to_string(previousRecord));
 
-			outStrings.AddStringNL(_T("Current Record = ") + std::to_string(recordList.GetCurrentRecord()));
+			outStrings.AddStringNL(CURRENTRECORD + std::to_string(recordList.GetCurrentRecord()));
 			outStrings.Unlock();
 
 			RedrawWindow(::hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
@@ -292,7 +299,7 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 
 			recordList.Save();
 
-			outStrings.RemoveString(_T("Recording...."));
+			outStrings.RemoveString(RECORDING);
 			RedrawWindow(::hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
 		}
 		else if(recordList.GetCurrentRecord() != RecordList::INVALID)
@@ -305,7 +312,7 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 			int mx = (pt.x * USHRT_MAX) / screenWidth;
 			int my = (pt.y * USHRT_MAX) / screenHeight;*/
 
-			outStrings.AddString(_T("Recording...."));
+			outStrings.AddString(RECORDING);
 			RedrawWindow(::hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
 
 			recordList.StartRecording();
@@ -321,12 +328,12 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 	{
 		if (recordList.HasRecorded() && !recordList.IsRecording())
 		{
-			outStrings.AddString(_T("Simulating Record..."));
+			outStrings.AddString(SIMUALTINGRECORD);
 			RedrawWindow(::hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
 
 			recordList.SimulateRecord();
 
-			outStrings.RemoveString(_T("Simulating Record..."));
+			outStrings.RemoveString(SIMUALTINGRECORD);
 			RedrawWindow(::hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
 		}
 		return;
@@ -345,7 +352,7 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 	// Add Record
 	if (CheckKey::VKComboDown(kbd, { VK_CONTROL, VK_MENU, keys.CharToVirtualKey(_T('A')) }))
 	{
-		outStrings.AddString(_T("Adding Record... waiting for key combination"));
+		outStrings.AddString(ADDINGRECORD);
 		RedrawWindow(::hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
 
 		comboRec.StartRecording();
@@ -355,7 +362,7 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 	// Delete record
 	if (CheckKey::VKComboDown(kbd, { VK_CONTROL, VK_MENU, keys.CharToVirtualKey(_T('D')) }))
 	{
-		outStrings.AddString(_T("Deleting Record... waiting for key combination"));
+		outStrings.AddString(DELETINGRECORD);
 		RedrawWindow(::hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
 
 		comboRec.StartDeleting();
@@ -368,9 +375,9 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 		{
 			outStrings.Lock();
 			if (previousRecord != -1)
-				outStrings.RemoveStringNL(_T("Current Record = ") + std::to_string(previousRecord));
+				outStrings.RemoveStringNL(CURRENTRECORD + std::to_string(previousRecord));
 
-			outStrings.AddStringNL(_T("Current Record = ") + std::to_string(recordList.GetCurrentRecord()));
+			outStrings.AddStringNL(CURRENTRECORD + std::to_string(recordList.GetCurrentRecord()));
 			outStrings.Unlock();
 
 			RedrawWindow(::hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
@@ -428,7 +435,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		
 		rawInput = std::make_unique<RawInp>(hInst, MouseBIProc, KbdBIProc);
 
-		outStrings.AddString("| SELECT/TOGGLE_REC - CTRL + F1 | SIM -  CTRL + F2 | ADD - CTRL + MENU + A | DEL - CTRL + MENU + D | EXIT - CTRL + ESC |");
+		outStrings.AddString(INSTRUCTIONS);
 
 		break;
 	}
@@ -461,30 +468,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		int yPos = 60;
 
-		/*std::string outStr = _T("Recording...");
-		if (recordList.IsRecording())
-		{
-			TextOut(h, 0, yPos, outStr.c_str(), outStr.size());
-			yPos += 30;
-		}
-
-		const int record = recordList.GetCurrentRecord();
-		outStr = (record != -1) ? std::string(_T("Current Record = ")) + std::to_string(record) : _T("Invalid Record");
-		TextOut(h, 0, yPos, outStr.c_str(), outStr.size());
-		yPos += 30;
-
-		if (recordList.IsSimulating())
-		{
-			outStr = _T("Simulating...");
-			TextOut(h, 0, yPos, outStr.c_str(), outStr.size());
-			yPos += 30;
-		}*/
-
 		auto& strings = outStrings.GetOutStrings();
 		outStrings.Lock();
 		for (auto& it : strings)
 		{
-			TextOut(h, 0, yPos, it.first.c_str(), it.first.size());
+			TextOut(h, 0, yPos, it.c_str(), it.size());
 			yPos += 30;
 		}
 		outStrings.Unlock();

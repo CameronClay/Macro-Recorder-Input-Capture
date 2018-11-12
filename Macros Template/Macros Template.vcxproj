@@ -131,7 +131,7 @@
     <ClCompile Include="RawInp.cpp" />
     <ClCompile Include="RecordList.cpp" />
     <ClCompile Include="SimInp.cpp" />
-    <ClCompile Include="StringHashMap.cpp" />
+    <ClCompile Include="StringSetp.cpp" />
     <ClCompile Include="windows.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -147,7 +147,7 @@
     <ClInclude Include="Keys.h" />
     <ClInclude Include="RawInp.h" />
     <ClInclude Include="SimInp.h" />
-    <ClInclude Include="StringHashMap.h" />
+    <ClInclude Include="StringSet.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -45,13 +45,13 @@
     <ClCompile Include="KeyComboRec.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="StringHashMap.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="IgnoreKeys.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Event.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StringSetp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -83,9 +83,6 @@
     <ClInclude Include="KeyComboRec.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="StringHashMap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="IgnoreKeys.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -93,6 +90,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Function.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StringSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
