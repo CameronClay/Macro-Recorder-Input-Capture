@@ -2,104 +2,182 @@
 #include <fstream>
 #include <Windows.h>
 #include <variant>
-
+#include <optional>
 struct DelayData
 {
 	static constexpr int uuid = 0;
+	DelayData( std::ifstream& is );
 	DelayData(DWORD delayMilli = 0);
-	DelayData(const DelayData&) = default;
 
 	void AddDelay(DWORD delay);
-	DWORD delayMilli;
+	void ReadData( std::ifstream& is );
+	void SaveData( std::ostream& os )const;
+
+	DWORD delayMilli = 0;
 };
 
 struct MouseClickData
 {
 	static constexpr int uuid = 1;
+	MouseClickData( std::ifstream& is );
 	MouseClickData(bool down, bool left, bool right, bool middle);
 	MouseClickData() = default;
-	MouseClickData(const MouseClickData&) = default;
+	void ReadData( std::ifstream& is );
+	void SaveData( std::ostream& os )const;
 
-	bool down, left, right, middle;
+	bool down = false, left = false, right = false, middle = false;
 };
 
 struct MouseXClickData
 {
 	static constexpr int uuid = 2;
+	MouseXClickData( std::ifstream& is );
 	MouseXClickData(bool down, bool x1, bool x2);
 	MouseXClickData() = default;
-	MouseXClickData(const MouseXClickData&) = default;
+	void ReadData( std::ifstream& is );
+	void SaveData( std::ostream& os )const;
 
-	bool down, x1, x2;
+	bool down = false, x1 = false, x2 = false;
 };
 
 struct MouseMoveData
 {
 	static constexpr int uuid = 3;
+	MouseMoveData( std::ifstream& is );
 	MouseMoveData(int x, int y, bool absolute);
 	MouseMoveData() = default;
-	MouseMoveData(const MouseMoveData&) = default;
 
-	int x, y;
-	bool absolute;
+	void ReadData( std::ifstream& is );
+	void SaveData( std::ostream& os )const;
+	int x = 0, y = 0;
+	bool absolute = false;
 };
 
 struct MouseScrollData
 {
 	static constexpr int uuid = 4;
+	MouseScrollData( std::ifstream& is );
 	MouseScrollData(int nClicks);
 	MouseScrollData() = default;
-	MouseScrollData(const MouseScrollData&) = default;
 
-	int nClicks;
+	void ReadData( std::ifstream& is );
+	void SaveData( std::ostream& os )const;
+
+	int nClicks = 0;
 };
 
 struct KbdData
 {
 	static constexpr int uuid = 5;
+	KbdData( std::ifstream& is );
 	KbdData(WORD key, bool down, bool sc);
 	KbdData() = default;
-	KbdData(const KbdData&) = default;
 
-	WORD key;
-	bool down, sc;
+	void ReadData( std::ifstream& is );
+	void SaveData( std::ostream& os )const;
+
+	WORD key = 0;
+	bool down = false, sc = false;
 };
 
 
 using InputData = std::variant<DelayData, MouseClickData, MouseXClickData, MouseMoveData, MouseScrollData, KbdData>;
 
-struct ReadVisitor
+class Input
 {
-	std::ifstream& is;
+public:
+	Input() = default;
+	template<typename T>
+	Input( T&& _value )
+		:
+		data( std::move( _value ) )
+	{}
+	void ReadData( std::ifstream& is )
+	{
+		auto read_data = [ & ]( auto& _data )
+		{
+			_data.ReadData( is );
+		};
 
-	ReadVisitor(std::ifstream&);
+		std::visit( read_data, data );
+	}
+	void SaveData( std::ostream& os )const
+	{
+		auto write_data = [ & ]( const auto& _data )
+		{
+			_data.SaveData( os );
+		};
 
-	void operator()(DelayData const&);
-	void operator()(MouseClickData const&);
-	void operator()(MouseXClickData const&);
-	void operator()(MouseMoveData const&);
-	void operator()(MouseScrollData const&);
-	void operator()(KbdData const&);
+		std::visit( write_data, data );
+	}
+	
+	bool AddDelay( float _delay )
+	{
+		auto add_delay = [ & ]( auto& _data )
+		{
+			using type = std::decay_t<decltype( _data )>;
+			if constexpr( std::is_same_v<type, DelayData> )
+			{
+				_data.AddDelay( _delay );
+				return true;
+			}
+
+			return false;
+		};
+
+		return std::visit( add_delay, data );
+	}
+	template<typename T, typename IfSame, typename IfNotSame>
+	void ConditionalCall( IfSame&& _ifsame, IfNotSame&& _ifnotsame )
+	{
+		auto call = [ & ]( auto& _data )
+		{
+			using type = std::decay_t<decltype( _data )>;
+			if constexpr( std::is_same_v<type, T> )
+			{
+				_ifsame(_data);
+			}
+			else
+			{
+				_ifnotsame();
+			}
+		};
+
+		std::visit( call, data );
+	}
+private:
+	InputData data;
 };
+//struct ReadVisitor
+//{
+//	ReadVisitor(std::ifstream&);
+//
+//	void operator()(DelayData const&);
+//	void operator()(MouseClickData const&);
+//	void operator()(MouseXClickData const&);
+//	void operator()(MouseMoveData const&);
+//	void operator()(MouseScrollData const&);
+//	void operator()(KbdData const&);
+//
+//	std::ifstream& is;
+//};
 
-struct SaveVisitor
-{
-	std::ostream& os;
-
-	SaveVisitor(std::ostream&);
-
-	void operator()(DelayData const&);
-	void operator()(MouseClickData const&);
-	void operator()(MouseXClickData const&);
-	void operator()(MouseMoveData const&);
-	void operator()(MouseScrollData const&);
-	void operator()(KbdData const&);
-};
+//struct SaveVisitor
+//{
+//	SaveVisitor(std::ostream&);
+//
+//	void operator()(DelayData const&);
+//	void operator()(MouseClickData const&);
+//	void operator()(MouseXClickData const&);
+//	void operator()(MouseMoveData const&);
+//	void operator()(MouseScrollData const&);
+//	void operator()(KbdData const&);
+//
+//	std::ostream& os;
+//};
 
 struct SimulateVisitor
 {
-	SimulateVisitor() = default;
-
 	void operator()(DelayData const&);
 	void operator()(MouseClickData const&);
 	void operator()(MouseXClickData const&);

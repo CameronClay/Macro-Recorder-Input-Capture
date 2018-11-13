@@ -7,28 +7,30 @@
 class InputHandler
 {
 public:
-	InputHandler();
-	InputHandler(const std::vector<TCHAR>& toggleVKeys);
-	InputHandler(InputHandler&& ih) noexcept;
-	InputHandler& operator=(InputHandler&& ih) noexcept;
+	InputHandler() = default;
+	InputHandler( std::vector<TCHAR> toggleVKeys );
 	bool operator==(const std::vector<TCHAR>& vKeys) const;
-
-	~InputHandler();
 
 	void Cleanup();
 
 	template<typename T, typename... Args>
 	void Add(Args&&... vals)
 	{
-		inputs.push_back(T{std::forward<Args>(vals)... });
+		input.emplace_back( T{ std::forward<Args>( vals )... } );
 	}
-
+	template<typename T>
+	void Add( T&& _value )
+	{
+		input.push_back( std::move( _value ) );
+	}
 	void Simulate();
 
-	bool Load(const char* filename);
-	bool Save(const char* filename);
+	bool Load(const std::string& filename);
+	bool Save(const std::string& filename);
 
-	InputData* GetBack() const;
+	Input* GetBack();
+	const Input* GetBack() const;
+
 	void PopBack();
 
 	void StartRecording();
@@ -41,6 +43,6 @@ public:
 	std::string FormatVKeys();
 private:
 	std::vector<TCHAR> toggleVKeys;
-	std::vector<InputData> inputs;
-	bool recording;
+	std::vector<Input> inputs;
+	bool recording = false;
 };

@@ -2,37 +2,11 @@
 #include "CheckKey.h"
 #include <sstream>
 
-InputHandler::InputHandler()
+
+InputHandler::InputHandler( std::vector<TCHAR> toggleVKeys )
 	:
-	recording(false)
+	toggleVKeys( std::move( toggleVKeys ) )
 {}
-
-InputHandler::InputHandler(const std::vector<TCHAR>& toggleVKeys)
-	:
-	toggleVKeys(toggleVKeys),
-	recording(false)
-{}
-
-InputHandler::InputHandler(InputHandler&& ih) noexcept
-	:
-	toggleVKeys(std::move(ih.toggleVKeys)),
-	inputs(std::move(ih.inputs)),
-	recording(ih.recording)
-{
-	memset(&ih, 0, sizeof(InputHandler));
-}
-
-InputHandler& InputHandler::operator=(InputHandler&& ih) noexcept
-{
-	if (this != &ih)
-	{
-		toggleVKeys = std::move(ih.toggleVKeys);
-		inputs = std::move(ih.inputs);
-		recording = ih.recording;
-		memset(&ih, 0, sizeof(InputHandler));
-	}
-	return *this;
-}
 
 
 bool InputHandler::operator==(const std::vector<TCHAR>& vKeys) const
@@ -40,17 +14,12 @@ bool InputHandler::operator==(const std::vector<TCHAR>& vKeys) const
 	if (vKeys.size() != toggleVKeys.size())
 		return false;
 
-	for (int i = 0, size = toggleVKeys.size(); i < size; ++i)
+	for( int i = 0; i < int( toggleVKeys.size() ); ++i )
 	{
 		if (vKeys[i] != toggleVKeys[i])
 			return false;
 	}
 	return true;
-}
-
-InputHandler::~InputHandler()
-{
-	Cleanup();
 }
 
 void InputHandler::Cleanup()
@@ -62,14 +31,14 @@ void InputHandler::Simulate()
 {
 	StopRecording();
 
-	for (auto& it : inputs)
-		std::visit(SimulateVisitor{}, it);
+	//for (auto& it : m_inputs)
+	//	std::visit(SimulateVisitor{}, it);
 }
 
-bool InputHandler::Load(const char* filename)
+bool InputHandler::Load(const std::string& filename)
 {
-	std::ifstream stream;
-	stream.open(filename, std::ifstream::in | std::ifstream::binary);
+	std::ifstream stream(
+		filename, std::ifstream::in | std::ifstream::binary);
 	if (!stream.is_open() || stream.fail())
 		return false;
 
@@ -88,6 +57,26 @@ bool InputHandler::Load(const char* filename)
 		toggleVKeys.push_back(key);
 	}
 
+	auto make_input = [ &stream ](int uuid)
+	{
+		switch( uuid )
+		{
+			case DelayData::uuid:
+				return Input( DelayData{ stream } );
+			case MouseClickData::uuid:
+				return Input( MouseClickData{ stream } );
+			case MouseXClickData::uuid:
+				return Input( MouseXClickData{ stream } );
+			case MouseMoveData::uuid:
+				return Input( MouseMoveData{ stream } );
+			case MouseScrollData::uuid:
+				return Input( MouseScrollData{ stream } );
+			case KbdData::uuid:
+				return Input( KbdData{ stream } );
+			default:
+				throw std::runtime_error( "Never throws, handled before call." );
+		}
+	};
 
 	while (!stream.eof())
 	{
@@ -96,61 +85,39 @@ bool InputHandler::Load(const char* filename)
 		if (stream.fail())
 			return false;
 
-		InputData dat;
-		switch (uuid)
-		{
-		case DelayData::uuid:
-			dat.emplace<DelayData>();
-			break;
-		case MouseClickData::uuid:
-			dat.emplace<MouseClickData>();
-			break;
-		case MouseXClickData::uuid:
-			dat.emplace<MouseXClickData>();
-			break;
-		case MouseMoveData::uuid:
-			dat.emplace<MouseMoveData>();
-			break;
-		case MouseScrollData::uuid:
-			dat.emplace<MouseScrollData>();
-			break;
-		case KbdData::uuid:
-			dat.emplace<KbdData>();
-			break;
-		default:
+		if( uuid < 0 || uuid > 5 )
 			return false;
-		}
-		std::visit(ReadVisitor{ stream }, dat);
-		Add<InputData>(dat);
+		
+		Add( make_input( uuid ) );
 	}
 
 	return true;
 }
-bool InputHandler::Save(const char* filename)
+bool InputHandler::Save(const std::string& filename)
 {
 	StopRecording();
+
 	if (!HasRecorded())
 		return false;
 
-	std::ofstream stream;
-	stream.open(filename, std::ofstream::out | std::ofstream::binary | std::ofstream::trunc);
+	std::ofstream stream(filename, std::ofstream::out | std::ofstream::binary | std::ofstream::trunc);
 	if (!stream.is_open() || stream.fail())
 		return false;
 
-	int nKeys = toggleVKeys.size();
-	stream.write((char*)&nKeys, sizeof(int));
+	const int nKeys = int( toggleVKeys.size() );
+	stream.write((const char*)&nKeys, sizeof(int));
 
-	for (auto& it : toggleVKeys)
-	{
-		stream.write((char*)&it, sizeof(TCHAR));
-		if (stream.fail())
-			return false;
-	}
+	stream.write( 
+		reinterpret_cast< const char* >( toggleVKeys.data() ), 
+		sizeof( TCHAR ) * toggleVKeys.size() );
 
-	for (auto& it : inputs)
+	if( stream.fail() )
+		return false;
+
+	for( const auto& data : inputs )
 	{
-		std::visit(SaveVisitor{stream}, it);
-		if (stream.fail())
+		data.SaveData( stream );
+		if( stream.fail() )
 		{
 			stream.close();
 			return false;
@@ -162,11 +129,20 @@ bool InputHandler::Save(const char* filename)
 	return true;
 }
 
-InputData* InputHandler::GetBack() const
+Input* InputHandler::GetBack()
 {
-	return (InputData*)(!inputs.empty() ? &inputs.back() : nullptr);
-}
+	if( inputs.empty() )
+		return nullptr;
 
+	return &inputs.back();
+}
+const Input* InputHandler::GetBack() const
+{
+	if( inputs.empty() )
+		return nullptr;
+
+	return &inputs.back();
+}
 void InputHandler::PopBack()
 {
 	inputs.pop_back();
@@ -198,11 +174,12 @@ bool InputHandler::CheckForToggle(const RAWKEYBOARD& kbd) const
 std::string InputHandler::FormatVKeys()
 {
 	std::stringstream stream;
-	for (uint32_t i = 0, size = toggleVKeys.size(); i < size; i++)
+
+	for( const auto c : toggleVKeys )
 	{
-		stream << (int)toggleVKeys[i];
-		if (i != size - 1)
-			stream << '+';
+		stream << int( c ) << '+';
 	}
-	return stream.str();
+	std::string str = stream.str();
+	str.pop_back();
+	return str;
 }

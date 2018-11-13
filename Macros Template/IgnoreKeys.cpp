@@ -8,19 +8,13 @@ Ignorekeys::KeyEntry::KeyEntry(WORD VKey, DWORD Message, bool oneTime)
 	oneTime(oneTime)
 {}
 
-void Ignorekeys::SetKeys(const std::vector<KeyEntry>& ignoreList)
+void Ignorekeys::SetKeys( std::vector<KeyEntry> ignoreList )
 {
-	if (!this->ignoreList.empty())
-		this->ignoreList.clear();
-
-	this->ignoreList = ignoreList;
+	this->ignoreList = std::move( ignoreList );
 }
 
 void Ignorekeys::SetKeys(std::initializer_list<KeyEntry> ignoreList)
 {
-	if (!this->ignoreList.empty())
-		this->ignoreList.clear();
-
 	this->ignoreList = ignoreList;
 }
 
@@ -29,10 +23,13 @@ bool Ignorekeys::KeyIgnored(const RAWKEYBOARD& kbd)
 	if (ignoreList.empty())
 		return false;
 
-	auto it = std::find_if(ignoreList.begin(), ignoreList.end(), 
-		[&kbd](const KeyEntry& e) {return ((kbd.VKey == e.VKey) && (kbd.Message == e.Message)); });
+	auto key_in_list = [ &kbd ]( const KeyEntry& e )
+	{
+		return ( ( kbd.VKey == e.VKey ) && ( kbd.Message == e.Message ) );
+	};
 
-	if ((it != ignoreList.end()))
+	if( auto it = std::find_if( ignoreList.begin(), ignoreList.end(), key_in_list); 
+		it != ignoreList.end() )
 	{
 		if (it->oneTime)
 		{
@@ -43,5 +40,6 @@ bool Ignorekeys::KeyIgnored(const RAWKEYBOARD& kbd)
 		}
 		return true;
 	}
+
 	return false;
 }

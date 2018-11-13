@@ -8,6 +8,7 @@
 #include "StringSet.h"
 #include "IgnoreKeys.h"
 #include "File.h"
+#include "Mouse.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <windows.h>
@@ -23,18 +24,18 @@
 TCHAR szWindowClass[] = _T("Macros");
 TCHAR szTitle[] = _T("Macros");
 
-const TCHAR DIRECTORY[] = _T("Records");
+constexpr TCHAR DIRECTORY[] = _T("Records");
 
-const TCHAR INSTRUCTIONS[] = _T("| SELECT / TOGGLE_REC - CTRL + F1 | SIM - CTRL + F2 | ADD - CTRL + MENU + A | DEL - CTRL + MENU + D | EXIT - CTRL + ESC | ");
-const TCHAR ADDINGRECORD[] = _T("Adding Record... waiting for key combination");
-const TCHAR DELETINGRECORD[] = _T("Deleting Record... waiting for key combination");
-const TCHAR RECORDING[] = _T("Recording....");
-const TCHAR SIMUALTINGRECORD[] = _T("Simulating Record...");
-const TCHAR CURRENTRECORD[] = _T("Current Record = ");
+constexpr TCHAR INSTRUCTIONS[] = _T("| SELECT / TOGGLE_REC - CTRL + F1 | SIM - CTRL + F2 | ADD - CTRL + MENU + A | DEL - CTRL + MENU + D | EXIT - CTRL + ESC | ");
+constexpr TCHAR ADDINGRECORD[] = _T("Adding Record... waiting for key combination");
+constexpr TCHAR DELETINGRECORD[] = _T("Deleting Record... waiting for key combination");
+constexpr TCHAR RECORDING[] = _T("Recording....");
+constexpr TCHAR SIMUALTINGRECORD[] = _T("Simulating Record...");
+constexpr TCHAR CURRENTRECORD[] = _T("Current Record = ");
 
-HINSTANCE hInst;
-HWND hWnd;
-HWND textDisp;
+HINSTANCE hInst = nullptr;
+HWND hWnd = nullptr;
+HWND textDisp = nullptr;
 
 std::unique_ptr<RawInp> rawInput;
 
@@ -42,14 +43,15 @@ KeyComboRec comboRec;
 RecordList recordList;
 Ignorekeys ignoreKeys;
 StringSet outStrings;
+Mouse mouse;
 
 COLORREF bckClr = RGB(255, 255, 255);
 COLORREF colorKey = bckClr;
 BYTE alpha = 255;
-HPEN hp = NULL;
-HBRUSH hb = NULL;
-HBRUSH clrb = NULL;
-HFONT hf = NULL;
+HPEN hp = nullptr;
+HBRUSH hb = nullptr;
+HBRUSH clrb = nullptr;
+HFONT hf = nullptr;
 RECT winRect;
 
 void MouseBIProc(const RAWMOUSE& mouse, DWORD delay);
@@ -57,10 +59,7 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay);
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
-int WINAPI WinMain(HINSTANCE hInstance,
-	HINSTANCE hPrevInstance,
-	LPSTR lpCmdLine,
-	int nCmdShow)
+INT WINAPI WinMain( HINSTANCE hInstance, HINSTANCE, LPSTR, INT )
 {
 	WNDCLASSEX wcex;
 
@@ -70,31 +69,25 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	wcex.cbClsExtra = 0;
 	wcex.cbWndExtra = 0;
 	wcex.hInstance = hInstance;
-	wcex.hIcon = NULL; //LoadIcon(hInstance, IDI_APPLICATION);
-	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wcex.hIcon = nullptr; //LoadIcon(hInstance, IDI_APPLICATION);
+	wcex.hCursor = LoadCursor( nullptr, IDC_ARROW);
 	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-	wcex.lpszMenuName = NULL;
+	wcex.lpszMenuName = nullptr;
 	wcex.lpszClassName = szWindowClass;
-	wcex.hIconSm = NULL; //LoadIcon(wcex.hInstance, IDI_APPLICATION);
+	wcex.hIconSm = nullptr; //LoadIcon(wcex.hInstance, IDI_APPLICATION);
 
 	if (!RegisterClassEx(&wcex))
 	{
-		MessageBox(NULL, _T("Call to RegisterClassEx failed!"), szTitle, NULL);
+		MessageBox( nullptr, _T("Call to RegisterClassEx failed!"), szTitle, NULL);
 		return 1;
 	}
 
 	hInst = hInstance;
 
-	RECT rc;
-	GetWindowRect(GetDesktopWindow(), &rc);
-	const uint32_t screenWidth = rc.right - rc.left;
-	const uint32_t screenHeight = rc.bottom - rc.top;
-
-	winRect.left = 0;
-	winRect.right = screenWidth + winRect.left;
-	winRect.top = 0;
-	winRect.bottom = screenHeight + winRect.top;
-
+	GetWindowRect(GetDesktopWindow(), &winRect);
+	const uint32_t screenWidth = winRect.right - winRect.left;
+	const uint32_t screenHeight = winRect.bottom - winRect.top;
+	
 	hWnd = CreateWindowEx(
 		WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST,
 		szWindowClass,
@@ -119,9 +112,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	}
 
 	ShowWindow(hWnd, SW_MAXIMIZE);
-	UpdateWindow(hWnd);
-
-	//EnableWindow(hWnd, FALSE);
+	UpdateWindow( hWnd );
 
 	MSG msg = {};
 	while (GetMessage(&msg, NULL, NULL, NULL))
@@ -153,13 +144,10 @@ void MouseBIProc(const RAWMOUSE& mouse, DWORD delay)
 	{
 		if (delay != 0)
 		{
-			InputData* ptr = recordList.GetBack();
-			if (ptr)
+			Input* ptr = recordList.GetBack();
+			if( !ptr->AddDelay( delay ) )
 			{
-				if (auto dat = std::get_if<DelayData>(ptr))
-					dat->AddDelay(delay);
-				else
-					recordList.AddEventToRecord<DelayData>(delay);
+				recordList.AddEventToRecord<DelayData>( delay );
 			}
 		}
 
@@ -196,8 +184,6 @@ void MouseBIProc(const RAWMOUSE& mouse, DWORD delay)
 		{
 			recordList.AddEventToRecord<MouseScrollData>((short)mouse.usButtonData / WHEEL_DELTA);
 		}
-
-
 		else if (mouse.usButtonFlags & RI_MOUSE_MIDDLE_BUTTON_DOWN)
 		{
 			recordList.AddEventToRecord<MouseClickData>(true, false, false, true);
@@ -235,7 +221,7 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 	{
 		if (kbd.Message == WM_KEYDOWN)
 		{
-			comboRec.AddVKey(kbd.VKey);
+			comboRec.AddVKey( TCHAR( kbd.VKey ) );
 			return;
 		}
 		else if (comboRec.HasRecorded())
@@ -255,7 +241,7 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 			outStrings.AddStringNL(CURRENTRECORD + std::to_string(recordList.GetCurrentRecord()));
 			outStrings.Unlock();
 
-			RedrawWindow(::hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
+			RedrawWindow(::hWnd, nullptr, nullptr, RDW_INVALIDATE | RDW_INTERNALPAINT);
 			return;
 		}
 	}
@@ -263,7 +249,7 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 	{
 		if (kbd.Message == WM_KEYDOWN)
 		{
-			comboRec.AddVKey(kbd.VKey);
+			comboRec.AddVKey( TCHAR( kbd.VKey ) );
 			return;
 		}
 		else if (comboRec.HasRecorded())
@@ -390,13 +376,10 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 		{
 			if (delay != 0)
 			{
-				InputData* ptr = recordList.GetBack();
-				if (ptr)
+				Input* ptr = recordList.GetBack();
+				if( !ptr->AddDelay( delay ) )
 				{
-					if (auto dat = std::get_if<DelayData>(ptr))
-						dat->AddDelay(delay);
-					else
-						recordList.AddEventToRecord<DelayData>(delay);
+					recordList.AddEventToRecord<DelayData>( delay );
 				}
 			}
 			recordList.AddEventToRecord<KbdData>(kbd.MakeCode, kbd.Flags == RI_KEY_MAKE, true);
@@ -410,12 +393,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_COMMAND:
 	{
-		switch (LOWORD(wParam))
-		{
-		default:
-			return DefWindowProc(hWnd, message, wParam, lParam);
-		}
-		break;
+		return DefWindowProc( hWnd, message, wParam, lParam );
 	}
 	case WM_CREATE:
 	{
@@ -472,7 +450,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		outStrings.Lock();
 		for (auto& it : strings)
 		{
-			TextOut(h, 0, yPos, it.c_str(), it.size());
+			TextOut( h, 0, yPos, it.c_str(), int( it.size() ) );
 			yPos += 30;
 		}
 		outStrings.Unlock();

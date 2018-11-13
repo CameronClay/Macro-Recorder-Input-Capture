@@ -36,25 +36,31 @@ RecordList::~RecordList(){}
 bool RecordList::Initialize(const TCHAR* workingDir)
 {
 	auto fileList = File::GetFileList(workingDir);
-	for (size_t i = 0, size = fileList.size(); i < size; ++i)
+	for( auto& file : fileList )
 	{
-		records.emplace_back();
-		records[i].handler.Load(fileList[i].c_str());
-		records[i].filename = std::move(fileList[i]);
+		auto& record = records.emplace_back();
+		record.handler.Load( file );
+		record.filename = std::move( file );
 	}
 	return true;
 }
 
 int RecordList::SelectRecord(const RAWKEYBOARD& kbd)
 {
-	for (size_t i = 0, size = records.size(); i < size; ++i)
+	auto find_record = [ &kbd ]( const RecordList::InputRecord& _record )
 	{
-		if (records[i].handler.CheckForToggle(kbd))
-		{
-			return currentRecord = i;
-		}
+		return _record.handler.CheckForToggle( kbd );
+	}; 
+
+	if( auto it = std::find_if( records.begin(), records.end(), find_record );
+		it != records.end() )
+	{
+		return currentRecord = ( it - records.begin() );
 	}
-	return RecordList::INVALID;
+	else
+	{
+		return RecordList::INVALID;
+	}
 }
 
 void RecordList::SimulateRecord()
@@ -84,11 +90,11 @@ bool RecordList::DeleteRecord(const std::vector<TCHAR>& toggleVKeys)
 	if (index == RecordList::INVALID)
 		return false;
 
-	fs::remove(records[index].filename.c_str());
+	fs::remove(records[index].filename);
 
 	if (index != (records.size() - 1))
 	{
-		fs::rename(records.back().filename.c_str(), records[index].filename.c_str());
+		fs::rename(records.back().filename, records[index].filename);
 		records[index] = std::move(records.back());
 	}
 
@@ -100,17 +106,27 @@ bool RecordList::DeleteRecord(const std::vector<TCHAR>& toggleVKeys)
 
 int RecordList::FindRecord(const std::vector<TCHAR>& toggleVKeys) const
 {
-	for (size_t i = 0, size = records.size(); i < size; ++i)
+	auto it = std::find_if(
+		records.begin(),
+		records.end(),
+		[ & ]( const auto& _record )
 	{
-		if (records[i].handler == toggleVKeys)
-			return i;
-	}
-	return RecordList::INVALID;
+		return _record.handler == toggleVKeys;
+	} );
+
+	return ( it != records.end() ) ?
+		it - records.begin() : RecordList::INVALID;
 }
 
-InputData* RecordList::GetBack() const
+const Input* RecordList::GetBack() const
 {
-	return (currentRecord != RecordList::INVALID) ? records[currentRecord].handler.GetBack() : nullptr;
+	return ( currentRecord != RecordList::INVALID ) ?
+		records[ currentRecord ].handler.GetBack() : nullptr;
+}
+Input* RecordList::GetBack()
+{
+	return ( currentRecord != RecordList::INVALID ) ?
+		records[ currentRecord ].handler.GetBack() : nullptr;
 }
 
 void RecordList::PopBack()

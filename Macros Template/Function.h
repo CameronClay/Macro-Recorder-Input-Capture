@@ -15,20 +15,26 @@ template<typename RT>
 class Function
 {
 public:
-	template<class Func, typename... Args> Function(Func func, Args&&... args)
+	template<class Func, typename... Args> 
+	Function(Func func, Args&&... args)
+		:
+		action( [ func, args... ]()->RT{return ( RT )( func( std::move( args )... ) ); } )
 	{
-		new(&action) std::function<RT()>([func, args...]()->RT{return (RT)(func(std::move(args)...)); });
 	}
-	template<class O, typename Func, typename... Args> Function(O& o, Func(O::*func), Args&&... args)
+	template<class O, typename Func, typename... Args> 
+	Function(O& o, Func(O::*func), Args&&... args)
+		:
+		action( [ &o, func, args... ]()->RT{return ( RT )( ( o.*func )( std::move( args )... ) ); } )
 	{
-		new(&action) std::function<RT()>([&o, func, args...]()->RT{return (RT)((o.*func)(std::move(args)...)); });
 	}
-	template<class O, typename Func, typename... Args> Function(O* o, Func(O::*func), Args&&... args)
+	template<class O, typename Func, typename... Args> 
+	Function(O* o, Func(O::*func), Args&&... args)
+		:
+		action( [ o, func, args... ]()->RT{return ( RT )( ( o->*func )( std::move( args )... ) ); } )
 	{
-		new(&action) std::function<RT()>([o, func, args...]()->RT{return (RT)((o->*func)(std::move(args)...)); });
 	}
 
-	inline RT operator()()
+	RT operator()()
 	{
 		return action();
 	}
