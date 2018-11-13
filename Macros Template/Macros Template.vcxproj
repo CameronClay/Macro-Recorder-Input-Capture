@@ -132,6 +132,8 @@
     <ClCompile Include="RecordList.cpp" />
     <ClCompile Include="SimInp.cpp" />
     <ClCompile Include="StringSetp.cpp" />
+    <ClCompile Include="Styles.cpp" />
+    <ClCompile Include="Window.cpp" />
     <ClCompile Include="windows.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -148,6 +150,9 @@
     <ClInclude Include="RawInp.h" />
     <ClInclude Include="SimInp.h" />
     <ClInclude Include="StringSet.h" />
+    <ClInclude Include="Styles.h" />
+    <ClInclude Include="Window.h" />
+    <ClInclude Include="Windows.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

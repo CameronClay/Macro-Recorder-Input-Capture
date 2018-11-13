@@ -1,3 +1,7 @@
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
 #include "Keys.h"
 #include "RawInp.h"
 #include "SimInp.h"
@@ -18,10 +22,11 @@
 #include <memory>
 #include <assert.h>
 #include <string>
+#include "Windows.h"
 #pragma comment(lib, "Winmm.lib")
 
-TCHAR szWindowClass[] = _T("Macros");
-TCHAR szTitle[] = _T("Macros");
+const TCHAR szWindowClass[] = _T("Macros");
+const TCHAR szTitle[] = _T("Macros");
 
 const TCHAR DIRECTORY[] = _T("Records");
 
@@ -32,98 +37,22 @@ const TCHAR RECORDING[] = _T("Recording....");
 const TCHAR SIMUALTINGRECORD[] = _T("Simulating Record...");
 const TCHAR CURRENTRECORD[] = _T("Current Record = ");
 
-HINSTANCE hInst;
-HWND hWnd;
-HWND textDisp;
-
-std::unique_ptr<RawInp> rawInput;
-
-KeyComboRec comboRec;
-RecordList recordList;
-Ignorekeys ignoreKeys;
-StringSet outStrings;
-
-COLORREF bckClr = RGB(255, 255, 255);
-COLORREF colorKey = bckClr;
-BYTE alpha = 255;
-HPEN hp = NULL;
-HBRUSH hb = NULL;
-HBRUSH clrb = NULL;
-HFONT hf = NULL;
-RECT winRect;
-
-uint32_t screenWidth, screenHeight;
-
-void MouseBIProc(const RAWMOUSE& mouse, DWORD delay);
-void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay);
-
-LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+MainWindow::MainWindow(HINSTANCE hInst)
+	:
+	Window(hInst, WNDPROCP{ {&MainWindow::WndProc}, this })
+{
+	WNDPROCP::FUNCM<MainWindow> p = &MainWindow::WndProc;
+}
 
 int WINAPI WinMain(HINSTANCE hInstance,
 	HINSTANCE hPrevInstance,
 	LPSTR lpCmdLine,
 	int nCmdShow)
 {
-	WNDCLASSEX wcex;
+	MainWindow window{ hInstance };
 
-	wcex.cbSize = sizeof(WNDCLASSEX);
-	wcex.style = CS_HREDRAW | CS_VREDRAW;
-	wcex.lpfnWndProc = WndProc;
-	wcex.cbClsExtra = 0;
-	wcex.cbWndExtra = 0;
-	wcex.hInstance = hInstance;
-	wcex.hIcon = NULL; //LoadIcon(hInstance, IDI_APPLICATION);
-	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-	wcex.lpszMenuName = NULL;
-	wcex.lpszClassName = szWindowClass;
-	wcex.hIconSm = NULL; //LoadIcon(wcex.hInstance, IDI_APPLICATION);
-
-	if (!RegisterClassEx(&wcex))
-	{
-		MessageBox(NULL, _T("Call to RegisterClassEx failed!"), szTitle, NULL);
-		return 1;
-	}
-
-	hInst = hInstance;
-
-	RECT rc;
-	GetWindowRect(GetDesktopWindow(), &rc);
-	screenWidth = rc.right - rc.left;
-	screenHeight = rc.bottom - rc.top;
-
-	winRect.left = 0;
-	winRect.right = screenWidth + winRect.left;
-	winRect.top = 0;
-	winRect.bottom = screenHeight + winRect.top;
-
-	hWnd = CreateWindowEx(
-		WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST,
-		szWindowClass,
-		szTitle,
-		WS_POPUPWINDOW,
-		0, 0,
-		screenWidth, screenHeight,
-		NULL,
-		NULL,
-		hInstance,
-		NULL
-		);
-
-	colorKey = GetSysColor(COLOR_WINDOW);
-
-	SetLayeredWindowAttributes(hWnd, colorKey, alpha, LWA_COLORKEY | LWA_ALPHA);
-
-	if (!hWnd)
-	{
-		MessageBox(NULL, _T("Call to CreateWindow failed!"), szTitle, NULL);
-		return 1;
-	}
-
-	ShowWindow(hWnd, SW_MAXIMIZE);
-	UpdateWindow(hWnd);
-
-	//EnableWindow(hWnd, FALSE);
+	window.CreateFullscreen(szWindowClass, szTitle, true);
+	window.SetLayeredAttrib(255);
 
 	MSG msg = {};
 	while (GetMessage(&msg, NULL, NULL, NULL))
@@ -132,24 +61,91 @@ int WINAPI WinMain(HINSTANCE hInstance,
 		DispatchMessage(&msg);
 	}
 
-	if (hf)
-		DeleteFont(hf); 
-
-	if (hp)
-		DeletePen(hp);
-
-	if (hb)
-		DeleteBrush(hb);
-
-	if (clrb)
-		DeleteBrush(clrb);
-
-	UnregisterClass(szWindowClass, hInst);
-
 	return (int)msg.wParam;
 }
 
-void MouseBIProc(const RAWMOUSE& mouse, DWORD delay)
+LRESULT CALLBACK MainWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	switch (message)
+	{
+	case WM_COMMAND:
+	{
+		switch (LOWORD(wParam))
+		{
+		default:
+			return DefWindowProc(hWnd, message, wParam, lParam);
+		}
+		break;
+	}
+	case WM_CREATE:
+	{
+		//TIMECAPS tc = {};
+		//timeGetDevCaps(&tc, sizeof(TIMECAPS));
+
+		//MMRESULT res = timeBeginPeriod(tc.wPeriodMin);
+		//assert(res == TIMERR_NOERROR);
+
+		if (!fs::exists(DIRECTORY))
+			fs::create_directory(DIRECTORY);
+
+		const std::string dir = fs::current_path().string() + _T('/') + DIRECTORY;
+		fs::current_path(dir);
+
+		recordList.Initialize(_T("./"));
+		
+		rawInput = std::make_unique<RawInp>(hInst, MOUSEPROC{ {&MainWindow::MouseBIProc}, this }, KBDPROC{ {&MainWindow::KbdBIProc}, this });
+
+		outStrings.AddString(INSTRUCTIONS);
+
+		break;
+	}
+	case WM_PAINT:
+	{
+		PAINTSTRUCT ps;
+		HDC hdc = BeginPaint(hWnd, &ps);
+
+		if (!styles.initialized)
+		{
+			auto hf = CreateFont(-MulDiv(12, GetDeviceCaps(hdc, LOGPIXELSY), 72), 0, 0, 0, FW_SEMIBOLD, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, NONANTIALIASED_QUALITY, DEFAULT_PITCH | FF_MODERN, _T("Arial"));
+			auto hp = CreatePen(PS_SOLID, 1, RGB(0, 255, 0));
+			auto hb = CreateSolidBrush(RGB(255, 255, 255));
+			auto clrb = CreateSolidBrush(RGB(255, 0, 255));
+
+			styles.Initalize(hdc, hp, hb, clrb, hf);
+		}
+
+		FillRect(hdc, &ps.rcPaint, styles.hb);
+
+		int yPos = 60;
+
+		auto& strings = outStrings.GetOutStrings();
+		outStrings.Lock();
+		for (auto& it : strings)
+		{
+			TextOut(hdc, 0, yPos, it.c_str(), it.size());
+			yPos += 30;
+		}
+		outStrings.Unlock();
+
+		SelectBrush(hdc, styles.clrb);
+
+		EndPaint(hWnd, &ps);
+	}	break;
+
+	case WM_DESTROY:
+		styles.Cleanup();
+
+		PostQuitMessage(0);
+		break;
+
+	default:
+		return DefWindowProc(hWnd, message, wParam, lParam);
+	}
+
+	return 0;
+}
+
+void MainWindow::MouseBIProc(const RAWMOUSE& mouse, DWORD delay)
 {
 	if (recordList.IsRecording())
 	{
@@ -229,7 +225,7 @@ void MouseBIProc(const RAWMOUSE& mouse, DWORD delay)
 	}
 }
 
-void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
+void MainWindow::KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 {
 	if (/*!(bool)(kbd.Flags & RI_KEY_BREAK) && */(kbd.MakeCode == keys.VirtualKeyToScanCode(VK_TAB)))
 	{
@@ -242,11 +238,11 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 	{
 		int a = 0;
 	}
-		
+
 	/*if (kbd.Flags & RI_KEY_E0)
 		kbd.MakeCode |= 0xE000;
 
-	else if (kbd.Flags & RI_KEY_E1) 
+	else if (kbd.Flags & RI_KEY_E1)
 		kbd.MakeCode |= 0xE100;*/
 
 	const int previousRecord = recordList.GetCurrentRecord();
@@ -258,7 +254,7 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 			comboRec.AddVKey(kbd.VKey);
 			return;
 		}
-		else if (comboRec.HasRecorded())	
+		else if (comboRec.HasRecorded())
 		{
 			comboRec.Stop();
 			if (!recordList.AddRecord(comboRec.GetVKeys()))
@@ -269,13 +265,13 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 
 			outStrings.Lock();
 			outStrings.RemoveStringNL(ADDINGRECORD);
-			
+
 			outStrings.RemoveStringNL(CURRENTRECORD + std::to_string(previousRecord));
 
 			outStrings.AddStringNL(CURRENTRECORD + std::to_string(recordList.GetCurrentRecord()));
 			outStrings.Unlock();
 
-			RedrawWindow(::hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
+			Redraw();
 			return;
 		}
 	}
@@ -303,7 +299,7 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 			outStrings.AddStringNL(CURRENTRECORD + std::to_string(recordList.GetCurrentRecord()));
 			outStrings.Unlock();
 
-			RedrawWindow(::hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
+			Redraw();
 			return;
 		}
 	}
@@ -320,20 +316,21 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 			recordList.Save();
 
 			outStrings.RemoveString(RECORDING);
-			RedrawWindow(::hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
+			Redraw();
 		}
-		else if(recordList.GetCurrentRecord() != RecordList::INVALID)
+		else if (recordList.GetCurrentRecord() != RecordList::INVALID)
 		{
 			ignoreKeys.SetKeys({ { VK_CONTROL, WM_KEYUP, true }, { VK_F1, WM_KEYUP, true } });
 
+			auto metrics = GetMetricsXY();
 			//Set starting mouse position
 			POINT pt;
 			GetCursorPos(&pt);
-			int mx = (pt.x * USHRT_MAX) / screenWidth;
-			int my = (pt.y * USHRT_MAX) / screenHeight;
+			int mx = (pt.x * USHRT_MAX) / std::get<0>(metrics);
+			int my = (pt.y * USHRT_MAX) / std::get<1>(metrics);
 
 			outStrings.AddString(RECORDING);
-			RedrawWindow(::hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
+			Redraw();
 
 			recordList.StartRecording();
 			recordList.AddEventToRecord<MouseMoveData>(mx, my, true);
@@ -350,12 +347,12 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 		if (recordList.HasRecorded() && !recordList.IsRecording())
 		{
 			outStrings.AddString(SIMUALTINGRECORD);
-			RedrawWindow(::hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
+			Redraw();
 
 			recordList.SimulateRecord();
 
 			outStrings.RemoveString(SIMUALTINGRECORD);
-			RedrawWindow(::hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
+			Redraw();
 		}
 		return;
 	}
@@ -365,7 +362,7 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 	{
 		if (!(recordList.IsRecording() || recordList.IsSimulating()))
 		{
-			PostMessage(::hWnd, WM_CLOSE, NULL, NULL);
+			Close();
 		}
 		return;
 	}
@@ -374,7 +371,7 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 	if (CheckKey::VKComboDown(kbd, { VK_CONTROL, VK_MENU, keys.CharToVirtualKey(_T('A')) }))
 	{
 		outStrings.AddString(ADDINGRECORD);
-		RedrawWindow(::hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
+		RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
 
 		comboRec.StartRecording();
 		return;
@@ -384,7 +381,7 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 	if (CheckKey::VKComboDown(kbd, { VK_CONTROL, VK_MENU, keys.CharToVirtualKey(_T('D')) }))
 	{
 		outStrings.AddString(DELETINGRECORD);
-		RedrawWindow(::hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
+		RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
 
 		comboRec.StartDeleting();
 		return;
@@ -401,7 +398,7 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 			outStrings.AddStringNL(CURRENTRECORD + std::to_string(recordList.GetCurrentRecord()));
 			outStrings.Unlock();
 
-			RedrawWindow(::hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
+			RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
 		}
 	}
 
@@ -425,95 +422,4 @@ void KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 			//recordList.AddEventToRecord<KbdData>(kbd.VKey, (kbd.Message == WM_KEYDOWN) || (kbd.Message == WM_SYSKEYDOWN), false);
 		}
 	}
-}
-
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	switch (message)
-	{
-	case WM_COMMAND:
-	{
-		switch (LOWORD(wParam))
-		{
-		default:
-			return DefWindowProc(hWnd, message, wParam, lParam);
-		}
-		break;
-	}
-	case WM_CREATE:
-	{
-		//TIMECAPS tc = {};
-		//timeGetDevCaps(&tc, sizeof(TIMECAPS));
-
-		//MMRESULT res = timeBeginPeriod(tc.wPeriodMin);
-		//assert(res == TIMERR_NOERROR);
-
-		if (!fs::exists(DIRECTORY))
-			fs::create_directory(DIRECTORY);
-
-		const std::string dir = fs::current_path().string() + _T('/') + DIRECTORY;
-		fs::current_path(dir);
-
-		recordList.Initialize(_T("./"));
-		
-		rawInput = std::make_unique<RawInp>(hInst, MouseBIProc, KbdBIProc);
-
-		outStrings.AddString(INSTRUCTIONS);
-
-		break;
-	}
-	case WM_PAINT:
-	{
-		PAINTSTRUCT ps;
-		HDC h = BeginPaint(hWnd, &ps);
-
-		if (!hf)
-			hf = CreateFont(-MulDiv(12, GetDeviceCaps(h, LOGPIXELSY), 72), 0, 0, 0, FW_SEMIBOLD, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, NONANTIALIASED_QUALITY, DEFAULT_PITCH | FF_MODERN, _T("Arial"));
-		SelectFont(h, hf);
-
-		if (!hp)
-			hp = CreatePen(PS_SOLID, 1, RGB(0, 255, 0));
-		SelectPen(h, hp);
-
-		if (!hb)
-			hb = CreateSolidBrush(bckClr);
-
-		if (!clrb)
-			clrb = CreateSolidBrush(RGB(255, 0, 255));
-
-		SelectBrush(h, hb);
-
-		SetBkColor(h, bckClr);
-		SetTextColor(h, RGB(0, 0, 0));
-		SetTextCharacterExtra(h, 1);
-
-		FillRect(h, &ps.rcPaint, hb);
-
-		int yPos = 60;
-
-		auto& strings = outStrings.GetOutStrings();
-		outStrings.Lock();
-		for (auto& it : strings)
-		{
-			TextOut(h, 0, yPos, it.c_str(), it.size());
-			yPos += 30;
-		}
-		outStrings.Unlock();
-
-		SelectBrush(h, clrb);
-
-		EndPaint(hWnd, &ps);
-	}	break;
-
-	case WM_DESTROY:
-		//timeEndPeriod(1);
-
-		PostQuitMessage(0);
-		break;
-
-	default:
-		return DefWindowProc(hWnd, message, wParam, lParam);
-	}
-
-	return 0;
 }

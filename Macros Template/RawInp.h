@@ -3,28 +3,28 @@
 #include <memory>
 #include <thread>
 #include "Function.h"
+#include "Window.h"
 
-using MOUSEPROC = PFunc<void, const RAWMOUSE&, DWORD>;
-using KEYBOARDPROC = PFunc<void, const RAWKEYBOARD&, DWORD>;
+using MOUSEPROC = Function<void, const RAWMOUSE&, DWORD>;
+using KBDPROC   = Function<void, const RAWKEYBOARD&, DWORD>;
 
 class RawInp
 {
 public:
-	RawInp(HINSTANCE hInst, MOUSEPROC mouseProc = nullptr, KEYBOARDPROC kbdProc = nullptr);
+	friend static void Input(HINSTANCE hInst, RawInp& rawInp);
+
+	RawInp(HINSTANCE hInst, MOUSEPROC mouseProc = (MOUSEPROC)nullptr, KBDPROC kbdProc = (KBDPROC)nullptr);
 	~RawInp();
 
-	bool InitializeInputDevices(HWND wnd);
-	void SendMouseProc(const RAWMOUSE& mouse, DWORD delay) const;
-	void SendKbdProc(const RAWKEYBOARD& kbd, DWORD delay) const;
-	void UpdateTimeStamp(DWORD t);
-
 private:
-	friend LRESULT CALLBACK RawInputProcCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	LRESULT CALLBACK RawInputProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
+	bool InitializeInputDevices();
+	void UpdateTimeStamp(DWORD t);
+
 	std::thread thrd;
-	HWND wnd;
+	Window wnd;
 	MOUSEPROC mouseProc;
-	KEYBOARDPROC kbdProc;
+	KBDPROC kbdProc;
 	DWORD prevTime, curTime;
 };
