@@ -84,7 +84,6 @@ bool Window::Create(int left, int top, int width, int height, LPCSTR wndClss, LP
 	if (!hWnd)
 	{
 		Window::MsgBox(_T("Call to CreateWindow failed!"), title);
-		int err = GetLastError();
 		return false;
 	}
 

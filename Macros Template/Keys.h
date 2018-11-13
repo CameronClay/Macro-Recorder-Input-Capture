@@ -1,11 +1,15 @@
 #pragma once
 #include <Windows.h>
 #include <tchar.h>
+#include <bitset>
+#include <vector>
 
 class Keys
 {
 public:
-	Keys();
+	friend class MainWindow;
+
+	Keys() = default;
 
 	static TCHAR CharToVirtualKey(TCHAR c);
 	static WORD CharToScanCode(TCHAR c);
@@ -13,12 +17,17 @@ public:
 	static WORD VirtualKeyToScanCode(TCHAR vk);
 	static TCHAR ScanCodeToVirtualKey(WORD scan);
 
-	const WORD Q, W, E, R;
-	const WORD A, S, D, F;
-	const WORD Z, X, C, V;
-	const WORD ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE;
-	const WORD F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12;
-	const WORD SPACE, ENTER;
-};
+	bool IsPressed(unsigned char vKey) const;
+	bool IsPressedCombo(std::initializer_list<TCHAR> vKeys);
+	bool IsPressedCombo(std::vector<TCHAR> vKeys);
 
-extern const Keys keys;
+	bool IsPressedSC(unsigned char sc) const;
+	bool IsPressedComboSC(std::initializer_list<TCHAR> scs);
+	bool IsPressedComboSC(std::vector<TCHAR> scs);
+private:
+	void OnPress(unsigned char vKey);
+	void OnRelease(unsigned char vKey);
+
+	static constexpr unsigned int nKeys = 256u;
+	std::bitset<nKeys> keyStates;
+};

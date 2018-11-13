@@ -28,6 +28,7 @@ private:
 
 	std::unique_ptr<RawInp> rawInput;
 
+	Keys keys;
 	KeyComboRec comboRec;
 	RecordList recordList;
 	Ignorekeys ignoreKeys;

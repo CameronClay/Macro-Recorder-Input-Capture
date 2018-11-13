@@ -35,7 +35,7 @@ bool CheckKey::SCComboDown(const RAWKEYBOARD& kbd, std::initializer_list<WORD> s
 	if ((sKeys.size() != 0) && (kbd.MakeCode == *(sKeys.end() - 1)) && (kbd.Flags == RI_KEY_BREAK))
 	{
 		for (auto it = sKeys.begin(), end = sKeys.end() - 1; it != end; ++it)
-			if (!(GetAsyncKeyState(keys.ScanCodeToVirtualKey(*it)) & 0x8000))
+			if (!(GetAsyncKeyState(Keys::ScanCodeToVirtualKey(*it)) & 0x8000))
 				return false;
 		return true;
 	}
@@ -58,7 +58,7 @@ bool CheckKey::SCComboDown(const RAWKEYBOARD& kbd, const std::vector<WORD>& sKey
 	if ((sKeys.size() != 0) && (kbd.MakeCode == *(sKeys.end() - 1)) && (kbd.Flags == RI_KEY_BREAK))
 	{
 		for (auto it = sKeys.begin(), end = sKeys.end() - 1; it != end; ++it)
-			if (!(GetAsyncKeyState(keys.ScanCodeToVirtualKey(*it)) & 0x8000))
+			if (!(GetAsyncKeyState(Keys::ScanCodeToVirtualKey(*it)) & 0x8000))
 				return false;
 		return true;
 	}

@@ -227,6 +227,11 @@ void MainWindow::MouseBIProc(const RAWMOUSE& mouse, DWORD delay)
 
 void MainWindow::KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 {
+	if ((kbd.Message == WM_KEYDOWN) || (kbd.Message == WM_SYSKEYDOWN))
+		keys.OnPress(kbd.VKey);
+	else
+		keys.OnRelease(kbd.VKey);
+
 	if (/*!(bool)(kbd.Flags & RI_KEY_BREAK) && */(kbd.MakeCode == keys.VirtualKeyToScanCode(VK_TAB)))
 	{
 		if (GetAsyncKeyState(VK_TAB) & 0x8000)
@@ -305,7 +310,7 @@ void MainWindow::KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 	}
 
 	// Select Record
-	if (CheckKey::VKComboDown(kbd, { VK_CONTROL, VK_F1 }))
+	if (keys.IsPressedCombo({ VK_CONTROL, VK_F1 }))
 	{
 		if (recordList.IsRecording())
 		{
@@ -342,7 +347,7 @@ void MainWindow::KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 	}
 
 	// Simulate Record
-	if (CheckKey::VKComboDown(kbd, { VK_CONTROL, VK_F2 }))
+	if (keys.IsPressedCombo({ VK_CONTROL, VK_F2 }))
 	{
 		if (recordList.HasRecorded() && !recordList.IsRecording())
 		{
@@ -358,7 +363,7 @@ void MainWindow::KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 	}
 
 	// Exit program
-	if (CheckKey::VKComboDown(kbd, { VK_CONTROL, /*VK_ESCAPE*/VK_DOWN })) // for some reason a VK_ESCAPE with WM_KEYDOWN is not triggered when ctrl is pressed...
+	if (keys.IsPressedCombo({ VK_CONTROL, /*VK_ESCAPE*/VK_DOWN })) // for some reason a VK_ESCAPE with WM_KEYDOWN is not triggered when ctrl is pressed...
 	{
 		if (!(recordList.IsRecording() || recordList.IsSimulating()))
 		{
@@ -368,20 +373,20 @@ void MainWindow::KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 	}
 
 	// Add Record
-	if (CheckKey::VKComboDown(kbd, { VK_CONTROL, VK_MENU, keys.CharToVirtualKey(_T('A')) }))
+	if (keys.IsPressedCombo({ VK_CONTROL, VK_MENU, keys.CharToVirtualKey(_T('A')) }))
 	{
 		outStrings.AddString(ADDINGRECORD);
-		RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
+		Redraw();
 
 		comboRec.StartRecording();
 		return;
 	}
 
 	// Delete record
-	if (CheckKey::VKComboDown(kbd, { VK_CONTROL, VK_MENU, keys.CharToVirtualKey(_T('D')) }))
+	if (keys.IsPressedCombo({ VK_CONTROL, VK_MENU, keys.CharToVirtualKey(_T('D')) }))
 	{
 		outStrings.AddString(DELETINGRECORD);
-		RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
+		Redraw();
 
 		comboRec.StartDeleting();
 		return;
@@ -398,7 +403,7 @@ void MainWindow::KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 			outStrings.AddStringNL(CURRENTRECORD + std::to_string(recordList.GetCurrentRecord()));
 			outStrings.Unlock();
 
-			RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_INTERNALPAINT);
+			Redraw();
 		}
 	}
 

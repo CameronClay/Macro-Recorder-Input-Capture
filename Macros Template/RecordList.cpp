@@ -50,9 +50,7 @@ int RecordList::SelectRecord(const RAWKEYBOARD& kbd)
 	for (size_t i = 0, size = records.size(); i < size; ++i)
 	{
 		if (records[i].handler.CheckForToggle(kbd))
-		{
 			return currentRecord = i;
-		}
 	}
 	return RecordList::INVALID;
 }
@@ -84,11 +82,12 @@ bool RecordList::DeleteRecord(const std::vector<TCHAR>& toggleVKeys)
 	if (index == RecordList::INVALID)
 		return false;
 
-	fs::remove(records[index].filename.c_str());
+	if(!records[index].filename.empty())
+		fs::remove(records[index].filename.c_str());
 
 	if (index != (records.size() - 1))
 	{
-		fs::rename(records.back().filename.c_str(), records[index].filename.c_str());
+		//fs::rename(records.back().filename.c_str(), records[index].filename.c_str());
 		records[index] = std::move(records.back());
 	}
 

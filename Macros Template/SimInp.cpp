@@ -74,7 +74,7 @@ void SimInp::KeyCombo(const std::vector<TCHAR>& keys)
 void SimInp::SendKbd(const TCHAR* str, int len)
 {
 	for (UINT i = 0; i < len; i++)
-		SimInp::SendKbd(keys.CharToVirtualKey(str[i]));
+		SimInp::SendKbd(Keys::CharToVirtualKey(str[i]));
 }
 
 bool SimInp::SendKbdDownSC(WORD key, bool E0)
@@ -111,7 +111,7 @@ bool SimInp::SendKbdSC(WORD key, bool E0, DWORD delayMilli)
 void SimInp::SendKbdSC(const TCHAR* str, int len)
 {
 	for (UINT i = 0; i < len; i++)
-		SimInp::SendKbdSC(keys.CharToScanCode(str[i]), false);
+		SimInp::SendKbdSC(Keys::CharToScanCode(str[i]), false);
 }
 
 void SimInp::KeyComboSC(std::initializer_list<std::pair<WORD, bool>> keys)
