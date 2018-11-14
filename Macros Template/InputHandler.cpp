@@ -30,9 +30,8 @@ void InputHandler::Cleanup()
 void InputHandler::Simulate()
 {
 	StopRecording();
-
-	//for (auto& it : m_inputs)
-	//	std::visit(SimulateVisitor{}, it);
+	for( const auto& input : inputs )
+		input.Simulate();
 }
 
 bool InputHandler::Load(const std::string& filename)

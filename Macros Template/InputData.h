@@ -12,6 +12,7 @@ struct DelayData
 	void AddDelay(DWORD delay);
 	void ReadData( std::ifstream& is );
 	void SaveData( std::ostream& os )const;
+	void Simulate()const;
 
 	DWORD delayMilli = 0;
 };
@@ -24,6 +25,7 @@ struct MouseClickData
 	MouseClickData() = default;
 	void ReadData( std::ifstream& is );
 	void SaveData( std::ostream& os )const;
+	void Simulate()const;
 
 	bool down = false, left = false, right = false, middle = false;
 };
@@ -36,6 +38,7 @@ struct MouseXClickData
 	MouseXClickData() = default;
 	void ReadData( std::ifstream& is );
 	void SaveData( std::ostream& os )const;
+	void Simulate()const;
 
 	bool down = false, x1 = false, x2 = false;
 };
@@ -49,6 +52,8 @@ struct MouseMoveData
 
 	void ReadData( std::ifstream& is );
 	void SaveData( std::ostream& os )const;
+	void Simulate()const;
+	
 	int x = 0, y = 0;
 	bool absolute = false;
 };
@@ -62,6 +67,7 @@ struct MouseScrollData
 
 	void ReadData( std::ifstream& is );
 	void SaveData( std::ostream& os )const;
+	void Simulate()const;
 
 	int nClicks = 0;
 };
@@ -75,6 +81,7 @@ struct KbdData
 
 	void ReadData( std::ifstream& is );
 	void SaveData( std::ostream& os )const;
+	void Simulate()const;
 
 	WORD key = 0;
 	bool down = false, sc = false;
@@ -110,7 +117,15 @@ public:
 
 		std::visit( write_data, data );
 	}
-	
+	void Simulate()const
+	{
+		auto simulate = []( const auto& _data )
+		{
+			_data.Simulate();
+		};
+
+		std::visit( simulate, data );
+	}
 	bool AddDelay( float _delay )
 	{
 		auto add_delay = [ & ]( auto& _data )
@@ -147,41 +162,4 @@ public:
 	}
 private:
 	InputData data;
-};
-//struct ReadVisitor
-//{
-//	ReadVisitor(std::ifstream&);
-//
-//	void operator()(DelayData const&);
-//	void operator()(MouseClickData const&);
-//	void operator()(MouseXClickData const&);
-//	void operator()(MouseMoveData const&);
-//	void operator()(MouseScrollData const&);
-//	void operator()(KbdData const&);
-//
-//	std::ifstream& is;
-//};
-
-//struct SaveVisitor
-//{
-//	SaveVisitor(std::ostream&);
-//
-//	void operator()(DelayData const&);
-//	void operator()(MouseClickData const&);
-//	void operator()(MouseXClickData const&);
-//	void operator()(MouseMoveData const&);
-//	void operator()(MouseScrollData const&);
-//	void operator()(KbdData const&);
-//
-//	std::ostream& os;
-//};
-
-struct SimulateVisitor
-{
-	void operator()(DelayData const&);
-	void operator()(MouseClickData const&);
-	void operator()(MouseXClickData const&);
-	void operator()(MouseMoveData const&);
-	void operator()(MouseScrollData const&);
-	void operator()(KbdData const&);
 };
