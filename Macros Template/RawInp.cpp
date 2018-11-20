@@ -81,7 +81,7 @@ LRESULT CALLBACK RawInp::RawInputProc(HWND hWnd, UINT message, WPARAM wParam, LP
 		char buffer[buffSize];
 
 		uint32_t outSize = buffSize;
-		uint32_t res = GetRawInputData((HRAWINPUT)lParam, RID_INPUT, buffer, &outSize, sizeof(RAWINPUTHEADER));
+		uint32_t res = GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, buffer, &outSize, sizeof(RAWINPUTHEADER));
 		if (res == 0)
 			Window::MsgBox(_T("Call to GetRawInputData failed!"));
 
