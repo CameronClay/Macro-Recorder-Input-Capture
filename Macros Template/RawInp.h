@@ -11,12 +11,11 @@ using KBDPROC   = Function<void, const RAWKEYBOARD&, DWORD>;
 class RawInp
 {
 public:
-	friend static void Input(HINSTANCE hInst, RawInp& rawInp);
-
 	RawInp(HINSTANCE hInst, MOUSEPROC mouseProc = (MOUSEPROC)nullptr, KBDPROC kbdProc = (KBDPROC)nullptr);
 	~RawInp();
 
 private:
+	static void Input(HINSTANCE, RawInp&);
 	LRESULT CALLBACK RawInputProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 	bool InitializeInputDevices();

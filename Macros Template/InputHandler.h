@@ -2,7 +2,6 @@
 #include <vector>
 #include <memory>
 #include "InputData.h"
-#include <variant>
 
 class InputHandler
 {
@@ -20,7 +19,13 @@ public:
 	template<typename T, typename... Args>
 	void Add(Args&&... vals)
 	{
-		inputs.push_back(T{std::forward<Args>(vals)... });
+		inputs.emplace_back(T{ std::forward<Args>(vals)... });
+	}
+
+	template<typename T>
+	void Add(T&& val)
+	{
+		inputs.push_back(std::move(val));
 	}
 
 	void Simulate();
@@ -28,7 +33,7 @@ public:
 	bool Load(const char* filename);
 	bool Save(const char* filename);
 
-	InputData* GetBack() const;
+	Input* GetBack() const;
 	void PopBack();
 
 	void StartRecording();
@@ -41,6 +46,6 @@ public:
 	std::string FormatVKeys();
 private:
 	std::vector<TCHAR> toggleVKeys;
-	std::vector<InputData> inputs;
+	std::vector<Input> inputs;
 	bool recording;
 };

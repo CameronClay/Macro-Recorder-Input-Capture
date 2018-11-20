@@ -141,9 +141,19 @@ RECT Window::GetRect() const
 	return rect;
 }
 
-std::tuple<int, int> Window::GetMetricsXY() const
+std::pair<int, int> Window::GetMetricsXY() const
 {
 	RECT rect = GetRect();
 
 	return { rect.right - rect.left, rect.bottom - rect.top };
+}
+
+bool Window::IsActive() const
+{
+	return GetActiveWindow() == hWnd;
+}
+
+bool Window::IsMinimized() const
+{
+	return IsIconic(hWnd) != 0;
 }

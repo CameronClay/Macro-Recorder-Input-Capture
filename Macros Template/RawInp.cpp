@@ -2,7 +2,7 @@
 #include <tchar.h>
 #include <assert.h>
 
-static void Input(HINSTANCE hInst, RawInp& rawInp)
+void RawInp::Input(HINSTANCE hInst, RawInp& rawInp)
 {
 	if (!rawInp.wnd.Create(0, 0, 0, 0, _T("RAW_INPUT"), _T("RAW_INPUT"), true))
 		return;
@@ -21,10 +21,9 @@ static void Input(HINSTANCE hInst, RawInp& rawInp)
 	}
 }
 
-
 RawInp::RawInp(HINSTANCE hInst, MOUSEPROC mouseProc, KBDPROC kbdProc)
 	:
-	thrd(&::Input, hInst, std::ref(*this)),
+	thrd(&RawInp::Input, hInst, std::ref(*this)),
 	wnd(hInst, WNDPROCP{ {&RawInp::RawInputProc}, this }),
 	mouseProc(mouseProc),
 	kbdProc(kbdProc),

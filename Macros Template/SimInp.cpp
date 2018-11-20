@@ -36,7 +36,9 @@ bool SimInp::SendKbd(WORD key, DWORD delayMilli)
 		return SendInput(2, input, sizeof(INPUT)) == 2;
 	}
 }
-void SimInp::KeyCombo(std::initializer_list<TCHAR> keys)
+
+template<typename T>
+void KeyCombo(const T& keys)
 {
 	const auto size = keys.size();
 	std::unique_ptr<INPUT[]> input = std::make_unique<INPUT[]>(size);
@@ -53,21 +55,14 @@ void SimInp::KeyCombo(std::initializer_list<TCHAR> keys)
 	SendInput(size, input.get(), sizeof(INPUT));
 }
 
+void SimInp::KeyCombo(std::initializer_list<TCHAR> keys)
+{
+	::KeyCombo(keys);
+}
+
 void SimInp::KeyCombo(const std::vector<TCHAR>& keys)
 {
-	const auto size = keys.size();
-	std::unique_ptr<INPUT[]> input = std::make_unique<INPUT[]>(size);
-	for (auto i = 0; i < size; i++)
-	{
-		input[i].type = INPUT_KEYBOARD;
-		input[i].ki = { (WORD)*(keys.begin() + i), NULL, NULL, 0, NULL };
-	}
-	SendInput(size, input.get(), sizeof(INPUT));
-
-	for (auto i = 0; i < size; i++)
-		input[i].ki.dwFlags = KEYEVENTF_KEYUP;
-
-	SendInput(size, input.get(), sizeof(INPUT));
+	::KeyCombo(keys);
 }
 
 
@@ -114,7 +109,8 @@ void SimInp::SendKbdSC(const TCHAR* str, int len)
 		SimInp::SendKbdSC(Keys::CharToScanCode(str[i]), false);
 }
 
-void SimInp::KeyComboSC(std::initializer_list<std::pair<WORD, bool>> keys)
+template<typename T>
+void KeyComboSC(const T& keys)
 {
 	const auto size = keys.size();
 	std::unique_ptr<INPUT[]> input = std::make_unique<INPUT[]>(size);
@@ -131,21 +127,14 @@ void SimInp::KeyComboSC(std::initializer_list<std::pair<WORD, bool>> keys)
 	SendInput(size, input.get(), sizeof(INPUT));
 }
 
+void SimInp::KeyComboSC(std::initializer_list<std::pair<WORD, bool>> keys)
+{
+	::KeyComboSC(keys);
+}
+
 void SimInp::KeyComboSC(const std::vector<std::pair<WORD, bool>>& keys)
 {
-	const auto size = keys.size();
-	std::unique_ptr<INPUT[]> input = std::make_unique<INPUT[]>(size);
-	for (auto i = 0; i < size; i++)
-	{
-		input[i].type = INPUT_KEYBOARD;
-		input[i].ki = { 0, (keys.begin() + i)->first, ((keys.begin() + i)->second ? KEYEVENTF_EXTENDEDKEY : 0UL) | KEYEVENTF_SCANCODE, 0, NULL };
-	}
-	SendInput(size, input.get(), sizeof(INPUT));
-
-	for (auto i = 0; i < size; i++)
-		input[i].ki.dwFlags = ((keys.begin() + i)->second ? KEYEVENTF_EXTENDEDKEY : 0UL) | KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP;
-
-	SendInput(size, input.get(), sizeof(INPUT));
+	::KeyComboSC(keys);
 }
 
 

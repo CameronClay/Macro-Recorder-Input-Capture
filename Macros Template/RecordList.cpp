@@ -107,7 +107,7 @@ int RecordList::FindRecord(const std::vector<TCHAR>& toggleVKeys) const
 	return RecordList::INVALID;
 }
 
-InputData* RecordList::GetBack() const
+Input* RecordList::GetBack() const
 {
 	return (currentRecord != RecordList::INVALID) ? records[currentRecord].handler.GetBack() : nullptr;
 }

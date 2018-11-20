@@ -24,7 +24,10 @@ public:
 
 	HWND GetHWND() const;
 	RECT GetRect() const;
-	std::tuple<int, int> GetMetricsXY() const;
+	std::pair<int, int> GetMetricsXY() const;
+
+	bool IsActive() const;
+	bool IsMinimized() const;
 
 protected:
 	HINSTANCE hInst;

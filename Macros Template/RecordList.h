@@ -23,7 +23,7 @@ public:
 
 	void SimulateRecord();
 
-	InputData* GetBack() const;
+	Input* GetBack() const;
 	void PopBack();
 
 	void Save();
