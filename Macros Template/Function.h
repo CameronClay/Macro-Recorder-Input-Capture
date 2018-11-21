@@ -61,7 +61,7 @@ using PFuncMC = typename CCHelper<CC>::template PFuncMC<RT, O, Args...>;
 
 template <typename FUNC>
 struct is_function_ptr
-	: 
+	:
 	std::integral_constant<bool, std::is_pointer<FUNC>::value &&
 	std::is_function<std::remove_pointer_t<FUNC>>::value>
 {};
@@ -80,13 +80,13 @@ public:
 		: action([func](Args&&... args)->RT {return (*func)(std::forward<Args>(args)...); })
 	{}
 
-	template<typename FUNC, typename O, typename = std::enable_if_t<std::is_member_function_pointer<FUNC>::value>>
-	Function(FUNC&& func, O* o)
+	template<typename FUNC, typename O>
+	Function(FUNC&& func, O* o, typename std::enable_if_t<std::is_member_function_pointer<FUNC>::value>* = nullptr)
 		: action([func, o](Args&&... args)->RT {return (o->*func)(std::forward<Args>(args)...); })
 	{}
 
-	template<typename FUNC, typename O, typename = std::enable_if_t<std::is_member_function_pointer<FUNC>::value>>
-	Function(FUNC&& func, O& o)
+	template<typename FUNC, typename O>
+	Function(FUNC&& func, O& o, typename std::enable_if_t<std::is_member_function_pointer<FUNC>::value>* = nullptr)
 		: action([func, &o](Args&&... args)->RT {return (o.*func)(std::forward<Args>(args)...); })
 	{}
 
@@ -109,22 +109,22 @@ class FunctionS
 {
 public:
 	template<typename FUNC, typename... Args>
-	FunctionS(FUNC&& func, typename std::enable_if_t<!is_function_ptr<FUNC>::value>* = nullptr)
+	FunctionS(FUNC&& func, Args&&... args, typename std::enable_if_t<!is_function_ptr<FUNC>::value>* = nullptr)
 		: action([func, args...]()->RT {return func(std::forward<Args>(args)...); })
 	{}
 
 	template<typename FUNC, typename... Args>
-	FunctionS(FUNC&& func, typename std::enable_if_t<is_function_ptr<FUNC>::value>* = nullptr)
+	FunctionS(FUNC&& func, Args&&... args, typename std::enable_if_t<is_function_ptr<FUNC>::value>* = nullptr)
 		: action([func, args...]()->RT {return (*func)(std::forward<Args>(args)...); })
 	{}
 
-	template<typename FUNC, typename O, typename... Args, typename = std::enable_if_t<std::is_member_function_pointer<FUNC>::value>>
-	FunctionS(FUNC&& func, O* o, Args&&... args)
+	template<typename FUNC, typename O, typename... Args>
+	FunctionS(FUNC&& func, O* o, Args&&... args, typename std::enable_if_t<std::is_member_function_pointer<FUNC>::value>* = nullptr)
 		: action([func, o, args...]()->RT {return (o->*func)(std::forward<Args>(args)...); })
 	{}
 
-	template<typename FUNC, typename O, typename... Args, typename = std::enable_if_t<std::is_member_function_pointer<FUNC>::value>>
-	FunctionS(FUNC&& func, O& o, Args&&... args)
+	template<typename FUNC, typename O, typename... Args>
+	FunctionS(FUNC&& func, O& o, Args&&... args, typename std::enable_if_t<std::is_member_function_pointer<FUNC>::value>* = nullptr)
 		: action([func, &o, args...]()->RT {return (o.*func)(std::forward<Args>(args)...); })
 	{}
 
