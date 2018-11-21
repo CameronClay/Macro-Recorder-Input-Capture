@@ -43,8 +43,8 @@ bool Event::WaitFor(uint32_t timeMilli)
 
 EventAutoReset::EventAutoReset(bool initialState)
 	:
-	counter(0),
-	isSet(initialState)
+	Event(initialState),
+	counter(0)
 {}
 
 void EventAutoReset::Set(uint32_t waitCount)

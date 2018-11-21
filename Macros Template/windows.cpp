@@ -39,7 +39,7 @@ const TCHAR CURRENTRECORD[] = _T("Current Record = ");
 
 MainWindow::MainWindow(HINSTANCE hInst)
 	:
-	Window(hInst, WNDPROCP{ {&MainWindow::WndProc}, this })
+	Window(hInst, WNDPROCP{ &MainWindow::WndProc, this })
 {}
 
 int WINAPI WinMain(HINSTANCE hInstance,
@@ -85,7 +85,7 @@ LRESULT CALLBACK MainWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 
 		recordList.Initialize(_T("./"));
 		
-		rawInput = std::make_unique<RawInp>(hInst, MOUSEPROC{ {&MainWindow::MouseBIProc}, this }, KBDPROC{ {&MainWindow::KbdBIProc}, this });
+		rawInput = std::make_unique<RawInp>(hInst, MOUSEPROC{ &MainWindow::MouseBIProc, this }, KBDPROC{ &MainWindow::KbdBIProc, this });
 
 		outStrings.AddString(INSTRUCTIONS);
 

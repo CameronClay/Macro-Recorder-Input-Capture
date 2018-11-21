@@ -24,7 +24,7 @@ void RawInp::Input(HINSTANCE hInst, RawInp& rawInp)
 RawInp::RawInp(HINSTANCE hInst, MOUSEPROC mouseProc, KBDPROC kbdProc)
 	:
 	thrd(&RawInp::Input, hInst, std::ref(*this)),
-	wnd(hInst, WNDPROCP{ {&RawInp::RawInputProc}, this }),
+	wnd(hInst, WNDPROCP{ &RawInp::RawInputProc, this }),
 	mouseProc(mouseProc),
 	kbdProc(kbdProc),
 	prevTime(0),

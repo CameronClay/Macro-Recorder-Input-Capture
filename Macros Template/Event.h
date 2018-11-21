@@ -1,7 +1,6 @@
 #pragma once
 #include <mutex>
 #include <condition_variable>
-#include <atomic>
 
 class Event
 {
@@ -11,13 +10,13 @@ public:
 	void Reset();
 	void Wait();
 	bool WaitFor(uint32_t timeMilli);
-private:
+protected:
 	std::mutex mutex;
 	std::condition_variable cv;
 	bool isSet;
 };
 
-class EventAutoReset
+class EventAutoReset : public Event
 {
 public:
 	EventAutoReset(bool initialState = false);
@@ -26,9 +25,6 @@ public:
 	void Wait();
 	bool WaitFor(uint32_t timeMilli);
 private:
-	std::mutex mutex;
-	std::condition_variable cv;
 	uint32_t counter;
-	bool isSet;
 };
 

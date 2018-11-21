@@ -3,8 +3,9 @@
 #include <Windows.h>
 #include <variant>
 
-struct DelayData
+class DelayData
 {
+public:
 	static constexpr int uuid = 0;
 	DelayData(std::ifstream& is);
 	DelayData(DWORD delayMilli = 0);
@@ -14,11 +15,13 @@ struct DelayData
 	void SaveData(std::ostream& os) const;
 	void Simulate() const;
 
+private:
 	DWORD delayMilli = 0;
 };
 
-struct MouseClickData
+class MouseClickData
 {
+public:
 	static constexpr int uuid = 1;
 	MouseClickData(std::ifstream& is);
 	MouseClickData(bool down, bool left, bool right, bool middle);
@@ -28,11 +31,13 @@ struct MouseClickData
 	void SaveData(std::ostream& os) const;
 	void Simulate() const;
 
+private:
 	bool down = false, left = false, right = false, middle = false;
 };
 
-struct MouseXClickData
+class MouseXClickData
 {
+public:
 	static constexpr int uuid = 2;
 	MouseXClickData(std::ifstream& is);
 	MouseXClickData(bool down, bool x1, bool x2);
@@ -42,11 +47,13 @@ struct MouseXClickData
 	void SaveData(std::ostream& os) const;
 	void Simulate() const;
 
+private:
 	bool down = false, x1 = false, x2 = false;
 };
 
-struct MouseMoveData
+class MouseMoveData
 {
+public:
 	static constexpr int uuid = 3;
 	MouseMoveData(std::ifstream& is);
 	MouseMoveData(int x, int y, bool absolute);
@@ -56,12 +63,14 @@ struct MouseMoveData
 	void SaveData(std::ostream& os) const;
 	void Simulate() const;
 
+private:
 	int x = 0, y = 0;
 	bool absolute = false;
 };
 
-struct MouseScrollData
+class MouseScrollData
 {
+public:
 	static constexpr int uuid = 4;
 	MouseScrollData(std::ifstream& is);
 	MouseScrollData(int nClicks);
@@ -71,11 +80,13 @@ struct MouseScrollData
 	void SaveData(std::ostream& os) const;
 	void Simulate() const;
 
+private:
 	int nClicks = 0;
 };
 
-struct KbdData
+class KbdData
 {
+public:
 	static constexpr int uuid = 5;
 	KbdData(std::ifstream& is);
 	KbdData(WORD key, bool down, bool sc, bool E0);
@@ -85,6 +96,7 @@ struct KbdData
 	void SaveData(std::ostream& os) const;
 	void Simulate() const;
 
+private:
 	WORD key = 0;
 	bool down = false, sc = false, E0 = false;
 };
