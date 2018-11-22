@@ -39,7 +39,7 @@ const TCHAR CURRENTRECORD[] = _T("Current Record = ");
 
 MainWindow::MainWindow(HINSTANCE hInst)
 	:
-	Window(hInst, WNDPROCP{ &MainWindow::WndProc, this })
+	Window(hInst, WNDPROCP::Function( &MainWindow::WndProc, this ))
 {}
 
 int WINAPI WinMain(HINSTANCE hInstance,

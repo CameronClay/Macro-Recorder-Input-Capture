@@ -5,8 +5,8 @@
 #include "Function.h"
 #include "Window.h"
 
-using MOUSEPROC = Function<void, const RAWMOUSE&, DWORD>;
-using KBDPROC   = Function<void, const RAWKEYBOARD&, DWORD>;
+using MOUSEPROC = Function<void(const RAWMOUSE&, DWORD)>;
+using KBDPROC   = Function<void(const RAWKEYBOARD&, DWORD)>;
 
 class RawInp
 {

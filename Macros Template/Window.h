@@ -3,7 +3,7 @@
 #include <tuple>
 #include "Function.h"
 
-using WNDPROCP = Function<LRESULT, HWND, UINT, WPARAM, LPARAM>;
+using WNDPROCP = Function<LRESULT(HWND, UINT, WPARAM, LPARAM)>;
 
 class Window
 {

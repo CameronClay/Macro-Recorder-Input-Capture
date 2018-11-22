@@ -2,10 +2,21 @@
 #include <stdlib.h>
 #include <functional>
 
-enum CallingConvention { CDECLR, STDCALL, FASTCALL, THISCALL };
+enum class CallingConvention { DEFAULT, CDECLR, STDCALL, FASTCALL, THISCALL };
 template<CallingConvention> struct CCHelper;
 
-template<> struct CCHelper<CDECLR>
+template<> struct CCHelper<CallingConvention::DEFAULT>
+{
+	template<typename RT, typename... Args>
+	using PFunc = RT(*)(Args...);
+
+	template<typename RT, typename O, typename... Args>
+	using PFuncM = RT(O::*)(Args...);
+
+	template<typename RT, typename O, typename... Args>
+	using PFuncMC = RT(O::*)(Args...) const;
+};
+template<> struct CCHelper<CallingConvention::CDECLR>
 {
 	template<typename RT, typename... Args>
 	using PFunc = RT(__cdecl *)(Args...);
@@ -16,7 +27,7 @@ template<> struct CCHelper<CDECLR>
 	template<typename RT, typename O, typename... Args>
 	using PFuncMC = RT(__cdecl O::*)(Args...) const;
 };
-template<> struct CCHelper<STDCALL>
+template<> struct CCHelper<CallingConvention::STDCALL>
 {
 	template<typename RT, typename... Args>
 	using PFunc = RT(__stdcall *)(Args...);
@@ -27,7 +38,7 @@ template<> struct CCHelper<STDCALL>
 	template<typename RT, typename O, typename... Args>
 	using PFuncMC = RT(__stdcall O::*)(Args...) const;
 };
-template<> struct CCHelper<FASTCALL>
+template<> struct CCHelper<CallingConvention::FASTCALL>
 {
 	template<typename RT, typename... Args>
 	using PFunc = RT(__fastcall *)(Args...);
@@ -38,7 +49,7 @@ template<> struct CCHelper<FASTCALL>
 	template<typename RT, typename O, typename... Args>
 	using PFuncMC = RT(__fastcall O::*)(Args...) const;
 };
-template<> struct CCHelper<THISCALL>
+template<> struct CCHelper<CallingConvention::THISCALL>
 {
 	template<typename RT, typename... Args>
 	using PFunc = RT(__thiscall *)(Args...);
@@ -51,13 +62,22 @@ template<> struct CCHelper<THISCALL>
 };
 
 template<CallingConvention CC, typename RT, typename... Args>
-using PFunc = typename CCHelper<CC>::template PFunc<RT, Args...>;
+using PFuncCC = typename CCHelper<CC>::template PFunc<RT, Args...>;
 
 template<CallingConvention CC, typename RT, typename O, typename... Args>
-using PFuncM = typename CCHelper<CC>::template PFuncM<RT, O, Args...>;
+using PFuncMCC = typename CCHelper<CC>::template PFuncM<RT, O, Args...>;
 
 template<CallingConvention CC, typename RT, typename O, typename... Args>
-using PFuncMC = typename CCHelper<CC>::template PFuncMC<RT, O, Args...>;
+using PFuncMCCC = typename CCHelper<CC>::template PFuncMC<RT, O, Args...>;
+
+template<typename RT, typename... Args>
+using PFunc = PFuncCC<CallingConvention::DEFAULT, RT, Args...>;
+
+template<typename RT, typename O, typename... Args>
+using PFuncM = PFuncMCC<CallingConvention::DEFAULT, RT, O, Args...>;
+
+template<typename RT, typename O, typename... Args>
+using PFuncMC = PFuncMCCC<CallingConvention::DEFAULT, RT, O, Args...>;
 
 template <typename FUNC>
 struct is_function_ptr
@@ -66,22 +86,23 @@ struct is_function_ptr
 	std::is_function<std::remove_pointer_t<FUNC>>::value>
 {};
 
+template<typename> class Function;
 template<typename RT, typename... Args>
-class Function
+class Function<RT(Args...)>
 {
 public:
 	template<typename FUNC>
-	Function(FUNC&& func, typename std::enable_if_t<!is_function_ptr<FUNC>::value>* = nullptr)
-		: action([func](Args&&... args)->RT {return func(std::forward<Args>(args)...); })
+	Function(FUNC func, typename std::enable_if_t<!is_function_ptr<FUNC>::value>* = nullptr)
+		: action(func)
 	{}
 
 	template<typename FUNC>
-	Function(FUNC&& func, typename std::enable_if_t<is_function_ptr<FUNC>::value>* = nullptr)
+	Function(FUNC func, typename std::enable_if_t<is_function_ptr<FUNC>::value>* = nullptr)
 		: action([func](Args&&... args)->RT {return (*func)(std::forward<Args>(args)...); })
 	{}
 
 	template<typename FUNC, typename O>
-	Function(FUNC&& func, O* o, typename std::enable_if_t<std::is_member_function_pointer<FUNC>::value>* = nullptr)
+	Function(FUNC func, O* o, typename std::enable_if_t<std::is_member_function_pointer<FUNC>::value>* = nullptr)
 		: action([func, o](Args&&... args)->RT {return (o->*func)(std::forward<Args>(args)...); })
 	{}
 
@@ -104,28 +125,17 @@ private:
 	std::function<RT(Args...)> action;
 };
 
+
 template<typename RT>
 class FunctionS
 {
 public:
-	template<typename FUNC, typename... Args>
-	FunctionS(FUNC&& func, Args&&... args, typename std::enable_if_t<!is_function_ptr<FUNC>::value>* = nullptr)
-		: action([func, args...]()->RT {return func(std::forward<Args>(args)...); })
-	{}
+	using Action = std::function<RT()>;
 
-	template<typename FUNC, typename... Args>
-	FunctionS(FUNC&& func, Args&&... args, typename std::enable_if_t<is_function_ptr<FUNC>::value>* = nullptr)
-		: action([func, args...]()->RT {return (*func)(std::forward<Args>(args)...); })
-	{}
-
-	template<typename FUNC, typename O, typename... Args>
-	FunctionS(FUNC&& func, O* o, Args&&... args, typename std::enable_if_t<std::is_member_function_pointer<FUNC>::value>* = nullptr)
-		: action([func, o, args...]()->RT {return (o->*func)(std::forward<Args>(args)...); })
-	{}
-
-	template<typename FUNC, typename O, typename... Args>
-	FunctionS(FUNC&& func, O& o, Args&&... args, typename std::enable_if_t<std::is_member_function_pointer<FUNC>::value>* = nullptr)
-		: action([func, &o, args...]()->RT {return (o.*func)(std::forward<Args>(args)...); })
+	template<typename... Args>
+	FunctionS(Args&&... args)
+		:
+		action(MakeFunc<Args...>(std::forward<Args>(args)...))
 	{}
 
 	operator bool() const
@@ -138,6 +148,46 @@ public:
 		return action();
 	}
 
-private:
-	std::function<RT()> action;
+public:
+	template<typename FUNC, typename... Args>
+	static std::enable_if_t<!is_function_ptr<FUNC>::value, Action> MakeFunc(FUNC&& func, Args&&... args)
+	{
+		auto f = [func](auto&&... args) -> RT
+		{
+			return func(std::forward<Args>(args)...);
+		};
+		return [f, tup = std::make_tuple(std::forward<Args>(args)...)]() mutable { return std::apply(f, tup); };
+	}
+
+	template<typename FUNC, typename... Args>
+	static std::enable_if_t<is_function_ptr<FUNC>::value, Action> MakeFunc(FUNC func, Args&&... args)
+	{
+		auto f = [func](auto&&... args) -> RT
+		{
+			return (*func)(std::forward<Args>(args)...);
+		};
+		return [f, tup = std::make_tuple(std::forward<Args>(args)...)]() mutable { return std::apply(f, tup); };
+	}
+
+	template<typename FUNC, typename O, typename... Args>
+	static std::enable_if_t<std::is_member_function_pointer<FUNC>::value, Action> MakeFunc(FUNC&& func, O* o, Args&&... args)
+	{
+		auto f = [func](auto&&... args) -> RT
+		{
+			return (o->*func)(std::forward<Args>(args)...);
+		};
+		return [f, tup = std::make_tuple(std::forward<Args>(args)...)]() mutable { return std::apply(f, tup); };
+	}
+
+	template<typename FUNC, typename O, typename... Args>
+	static std::enable_if_t<std::is_member_function_pointer<FUNC>::value, Action> MakeFunc(FUNC&& func, O& o, Args&&... args)
+	{
+		auto f = [func](auto&&... args) -> RT
+		{
+			return (o.*func)(std::forward<Args>(args)...);
+		};
+		return [f, tup = std::make_tuple(std::forward<Args>(args)...)]() mutable { return std::apply(f, tup); };
+	}
+
+	Action action;
 };
