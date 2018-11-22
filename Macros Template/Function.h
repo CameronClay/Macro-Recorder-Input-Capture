@@ -171,7 +171,7 @@ private:
 	template<typename FUNC, typename O, typename... Args>
 	static std::enable_if_t<std::is_member_function_pointer<FUNC>::value, Action> MakeFunc(FUNC func, O* o, Args&&... args)
 	{
-		auto f = [func](auto&&... args) -> RT
+		auto f = [func, o](auto&&... args) -> RT
 		{
 			return (o->*func)(std::forward<Args>(args)...);
 		};
@@ -181,7 +181,7 @@ private:
 	template<typename FUNC, typename O, typename... Args>
 	static std::enable_if_t<std::is_member_function_pointer<FUNC>::value, Action> MakeFunc(FUNC func, O& o, Args&&... args)
 	{
-		auto f = [func](auto&&... args) -> RT
+		auto f = [func, &o](auto&&... args) -> RT
 		{
 			return (o.*func)(std::forward<Args>(args)...);
 		};
