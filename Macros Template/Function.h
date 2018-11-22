@@ -107,7 +107,7 @@ public:
 	{}
 
 	template<typename FUNC, typename O>
-	Function(FUNC&& func, O& o, typename std::enable_if_t<std::is_member_function_pointer<FUNC>::value>* = nullptr)
+	Function(FUNC func, O& o, typename std::enable_if_t<std::is_member_function_pointer<FUNC>::value>* = nullptr)
 		: action([func, &o](Args&&... args)->RT {return (o.*func)(std::forward<Args>(args)...); })
 	{}
 
@@ -149,7 +149,7 @@ private:
 	using Action = std::function<RT()>;
 
 	template<typename FUNC, typename... Args>
-	static std::enable_if_t<!is_function_ptr<FUNC>::value, Action> MakeFunc(FUNC&& func, Args&&... args)
+	static std::enable_if_t<!is_function_ptr<FUNC>::value, Action> MakeFunc(FUNC func, Args&&... args)
 	{
 		auto f = [func](auto&&... args) -> RT
 		{
@@ -169,7 +169,7 @@ private:
 	}
 
 	template<typename FUNC, typename O, typename... Args>
-	static std::enable_if_t<std::is_member_function_pointer<FUNC>::value, Action> MakeFunc(FUNC&& func, O* o, Args&&... args)
+	static std::enable_if_t<std::is_member_function_pointer<FUNC>::value, Action> MakeFunc(FUNC func, O* o, Args&&... args)
 	{
 		auto f = [func](auto&&... args) -> RT
 		{
@@ -179,7 +179,7 @@ private:
 	}
 
 	template<typename FUNC, typename O, typename... Args>
-	static std::enable_if_t<std::is_member_function_pointer<FUNC>::value, Action> MakeFunc(FUNC&& func, O& o, Args&&... args)
+	static std::enable_if_t<std::is_member_function_pointer<FUNC>::value, Action> MakeFunc(FUNC func, O& o, Args&&... args)
 	{
 		auto f = [func](auto&&... args) -> RT
 		{
