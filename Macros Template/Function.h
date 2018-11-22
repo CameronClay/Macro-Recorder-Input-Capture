@@ -125,13 +125,10 @@ private:
 	std::function<RT(Args...)> action;
 };
 
-
 template<typename RT>
 class FunctionS
 {
 public:
-	using Action = std::function<RT()>;
-
 	template<typename... Args>
 	FunctionS(Args&&... args)
 		:
@@ -148,7 +145,9 @@ public:
 		return action();
 	}
 
-public:
+private:
+	using Action = std::function<RT()>;
+
 	template<typename FUNC, typename... Args>
 	static std::enable_if_t<!is_function_ptr<FUNC>::value, Action> MakeFunc(FUNC&& func, Args&&... args)
 	{
