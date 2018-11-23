@@ -86,7 +86,8 @@ struct is_function_ptr
 	std::is_function<std::remove_pointer_t<FUNC>>::value>
 {};
 
-template<typename> class Function;
+//Store function call without arugments bound
+template<typename Signature> class Function;
 template<typename RT, typename... Args>
 class Function<RT(Args...)>
 {
@@ -125,6 +126,7 @@ private:
 	std::function<RT(Args...)> action;
 };
 
+//Store function call with all arguments bound
 template<typename RT>
 class FunctionS
 {
