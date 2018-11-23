@@ -83,11 +83,13 @@ template <typename FUNC>
 struct is_function_ptr
 	:
 	std::integral_constant<bool, std::is_pointer<FUNC>::value &&
-	std::is_function<std::remove_pointer_t<FUNC>>::value>
+	std::is_function<std::remove_pointer_t<FUNC>>::value &&
+	!std::is_member_function_pointer<FUNC>::value>
 {};
 
-//Store function call without arugments bound
 template<typename Signature> class Function;
+
+//Store function call without arugments bound
 template<typename RT, typename... Args>
 class Function<RT(Args...)>
 {
@@ -128,11 +130,11 @@ private:
 
 //Store function call with all arguments bound
 template<typename RT>
-class FunctionS
+class Function<RT()>
 {
 public:
 	template<typename... Args>
-	FunctionS(Args&&... boundArgs)
+	Function(Args&&... boundArgs)
 		:
 		action(MakeFunc<Args...>(std::forward<Args>(boundArgs)...))
 	{}
