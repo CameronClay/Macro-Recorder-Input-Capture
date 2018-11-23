@@ -132,9 +132,9 @@ class FunctionS
 {
 public:
 	template<typename... Args>
-	FunctionS(Args&&... args)
+	FunctionS(Args&&... boundArgs)
 		:
-		action(MakeFunc<Args...>(std::forward<Args>(args)...))
+		action(MakeFunc<Args...>(std::forward<Args>(boundArgs)...))
 	{}
 
 	operator bool() const
