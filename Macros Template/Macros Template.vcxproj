@@ -141,6 +141,7 @@
     <ClInclude Include="Event.h" />
     <ClInclude Include="File.h" />
     <ClInclude Include="Function.h" />
+    <ClInclude Include="FunctionTraits.h" />
     <ClInclude Include="IgnoreKeys.h" />
     <ClInclude Include="InputData.h" />
     <ClInclude Include="InputHandler.h" />

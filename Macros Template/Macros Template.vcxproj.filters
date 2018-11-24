@@ -110,5 +110,8 @@
     <ClInclude Include="Windows.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FunctionTraits.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
