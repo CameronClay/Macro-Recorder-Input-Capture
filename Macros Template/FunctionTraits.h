@@ -114,6 +114,6 @@ namespace ftraits
 	template<typename FuncPT> using get_sig_s_t = typename get_sig_s<FuncPT>::type;
 
 	template<typename Sig> struct sig_get_rt;
-	template<typename RT, typename... Args> struct sig_get_rt<RT(Args...)> { using type = RT };
+	template<typename RT, typename... Args> struct sig_get_rt<RT(Args...)> { using type = RT; };
 	template<typename Sig> using sig_get_rt_t = typename sig_get_rt<Sig>::type;
 }
