@@ -113,5 +113,11 @@
     <ClInclude Include="FunctionTraits.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TypeList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TypeList_Detail.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

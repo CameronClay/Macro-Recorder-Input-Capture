@@ -70,33 +70,33 @@ public:
 	template<typename Func, typename... Args>
 	static std::enable_if_t<!f_traits::is_function_ptr_v<Func>, Action> MakeFunc(Func func, Args&&... args)
 	{
-		auto f = [func](auto&&... args) -> RT {return func(std::forward<decltype(args)>(args)...); };
+		auto f = [func](auto&&... args) -> RT {return func(std::forward<decltype(args)>(args)...);};
 
-		return[f, tup = std::make_tuple(std::forward<Args>(args)...)]() mutable->RT { return std::apply(f, tup); };
+		return [f, tup = std::make_tuple(std::forward<Args>(args)...)]() mutable -> RT { return std::apply(f, tup); };
 	}
 
 	template<typename Func, typename... Args>
 	static std::enable_if_t<f_traits::is_function_ptr_v<Func>, Action> MakeFunc(Func func, Args&&... args)
 	{
-		auto f = [func](auto&&... args) -> RT {return (*func)(std::forward<decltype(args)>(args)...); };
+		auto f = [func](auto&&... args) -> RT {return (*func)(std::forward<decltype(args)>(args)...);};
 
-		return[f, tup = std::make_tuple(std::forward<Args>(args)...)]() mutable->RT { return std::apply(f, tup); };
+		return [f, tup = std::make_tuple(std::forward<Args>(args)...)]() mutable -> RT { return std::apply(f, tup); };
 	}
 
 	template<typename Func, typename O, typename... Args>
 	static std::enable_if_t<std::is_member_function_pointer_v<Func>, Action> MakeFunc(Func func, O* o, Args&&... args)
 	{
-		auto f = [func, o](auto&&... args) -> RT {return (o->*func)(std::forward<decltype(args)>(args)...); };
+		auto f = [func, o](auto&&... args) -> RT {return (o->*func)(std::forward<decltype(args)>(args)...);};
 
-		return[f, tup = std::make_tuple(std::forward<Args>(args)...)]() mutable->RT { return std::apply(f, tup); };
+		return [f, tup = std::make_tuple(std::forward<Args>(args)...)]() mutable -> RT { return std::apply(f, tup); };
 	}
 
 	template<typename Func, typename O, typename... Args>
 	static std::enable_if_t<std::is_member_function_pointer_v<Func>, Action> MakeFunc(Func func, O& o, Args&&... args)
 	{
-		auto f = [func, &o](auto&&... args) -> RT {return (o.*func)(std::forward<decltype(args)>(args)...); };
+		auto f = [func, &o](auto&&... args) -> RT {return (o.*func)(std::forward<decltype(args)>(args)...);};
 
-		return[f, tup = std::make_tuple(std::forward<Args>(args)...)]() mutable->RT { return std::apply(f, tup); };
+		return [f, tup = std::make_tuple(std::forward<Args>(args)...)]() mutable -> RT { return std::apply(f, tup); };
 	}
 
 	Action action;
