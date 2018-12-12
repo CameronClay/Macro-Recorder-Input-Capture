@@ -35,52 +35,75 @@ namespace t_list
 
 		// Rebind Ts... to another template in the form of TTo<Ts...>
 		template <template<class...> class TTo>
-		using rebind                          = t_list::detail::rebind_t<type_list<Ts...>, TTo>;
+		using rebind                           = t_list::detail::rebind_t<type_list<Ts...>, TTo>;
 		// Apply Ts... to one or more templates in the form of TTo_First<TTo_Rest<Ts>>...>
 		template <template<class...> class TTo_First, template<class...> class... TTo_Rest>
-		using apply                           = t_list::detail::apply_t<type_list<Ts...>, TTo_First, TTo_Rest...>;
+		using apply                            = t_list::detail::apply_t<type_list<Ts...>, TTo_First, TTo_Rest...>;
 
+		// Reverse all Ts in list
+		using reverse                          = t_list::detail::reverse_t<type_list<Ts...>>;
 		// Remove duplicates from list
-		using unique                          = std::conditional_t<is_unique, type_list<Ts...>, t_list::detail::type_list_unique<Ts...>>;
+		using unique                           = std::conditional_t<is_unique, type_list<Ts...>, t_list::detail::type_list_unique<Ts...>>;
 
 		// Extract type at idx
 		template <std::size_t idx>
-		using extract                         = t_list::detail::extract_t<idx, Ts...>;
+		using extract                          = t_list::detail::extract_t<idx, Ts...>;
 		// Extract type at idx
 		template <std::size_t idx>
-		using erase                           = t_list::detail::erase_t  <idx, Ts...>;
+		using erase                            = t_list::detail::erase_t  <idx, Ts...>;
 
 		// Acess first type in list
-		using front                           = t_list::detail::front_t<type_list<Ts...>>;
+		using front                            = t_list::detail::front_t<type_list<Ts...>>;
 		// Add Args to front of list
 		template <typename... Args>
-		using append_front                    = type_list<Args..., Ts...>;
+		using append_front                     = type_list<Args..., Ts...>;
 		// Append Args to front of list if Predicate<Args>::value == true
 		template <template <typename> class Predicate, typename... Args>
-		using append_conditional_front        = t_list::detail::append_conditional_front_t<Predicate, type_list<Ts...>, Args...>;
+		using append_conditional_front         = t_list::detail::append_conditional_front_t<Predicate, type_list<Ts...>, Args...>;
 		// Remove first element in list
-		using pop_front                       = t_list::detail::pop_front_t<type_list<Ts...>>;
+		using pop_front                        = t_list::detail::pop_front_t<type_list<Ts...>>;
 
 		// Access last type in list
-		using back                            = t_list::detail::back_t<type_list<Ts...>>;
+		using back                             = t_list::detail::back_t<type_list<Ts...>>;
 		// Append Args to end of list
 		template <typename... Args>
-		using append                          = type_list<Ts..., Args...>;
+		using append                           = type_list<Ts..., Args...>;
 		// Append Args to end of list if Predicate<Args>::value == true
 		template <template <typename> class Predicate, typename... Args>
-		using append_conditional              = t_list::detail::append_conditional_t<Predicate, type_list<Ts...>, Args...>;
+		using append_conditional               = t_list::detail::append_conditional_t<Predicate, type_list<Ts...>, Args...>;
+
 		// Append all TLists to current list of types
-		template <class... TLists>
-		using append_lists                    = t_list::detail::type_list_cat_t <type_list<Ts...>, TLists...>;
+		template <typename... TLists>
+		using append_lists                     = t_list::detail::type_list_cat_t <type_list<Ts...>, TLists...>;
+		// Append all types in TLists to current list of types if Predicate<T>::value == true
+		template <template <typename> class Predicate, class... TLists>
+		using append_lists_conditional         = t_list::detail::type_list_cat_conditional_t<Predicate, type_list<Ts...>, TLists...>;
 		// Remove all elements from list
-		using clear                           = type_list<>;
+		using clear                            = type_list<>;
 
 		// Remove all elements where Predicate<Ts>::value is false
 		template <template <typename> class Predicate>
-		using filter                         = t_list::detail::type_list_filter_t<Predicate, Ts...>;
-		// Computes cross product with another type_list
-		template <class TypeList>
-		using cartesian_product              = t_list::detail::cartesian_product_t<type_list<Ts...>, TypeList>;
+		using filter                          = t_list::detail::type_list_filter_t<Predicate, Ts...>;
+
+		// All set ops are right to left associative (only matters for difference)
+		// setop_union - computes union between type_list<Ts...> and TList
+		template<typename TList>
+		using setop_union                     = append_lists                          <type_list<Ts...>, TList>;		
+		// setop_union - computes intersection between type_list<Ts...> and TList
+		template<typename TList>
+		using setop_intersection              = t_list::detail::intersection_t        <type_list<Ts...>, TList>;
+		// setop_union - computes difference between type_list<Ts...> and TList
+		template<typename TList>
+		using setop_difference                = t_list::detail::difference_t          <type_list<Ts...>, TList>;
+		// setop_union - computes symmetric difference between type_list<Ts...> and TList
+		template<typename TList>
+		using setop_symmetric_difference      = t_list::detail::symmetric_difference_t<type_list<Ts...>, TList>;
+		// Computes cartesian product between type_list<Ts...> and TList
+		template <typename TList>
+		using setop_cartesian_product         = t_list::detail::cartesian_product_t<type_list<Ts...>, TList>;
+		// setop_is_subset - true if type_list<Ts...> is a subset of TList
+		template<typename TList>
+		static constexpr bool setop_is_subset = std::is_same_v<type_list<Ts...>, setop_intersection<TList>>;
 
 		// True if Predicate<Ts>:value is true for all Ts in list
 		template <template <typename> class Predicate>
@@ -88,7 +111,7 @@ namespace t_list
 		{
 			return std::conjunction_v<Predicate<Ts>...>;
 		}
-		// True if Predicate<Ts, Args>::value... is true
+		// True if Predicate<Ts, Args>::value... for all Ts and Args is true
 		template <template <typename, typename> class Predicate, typename... Args>
 		static constexpr bool        all_match_predicate()
 		{
