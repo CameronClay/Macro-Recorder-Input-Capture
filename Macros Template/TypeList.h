@@ -53,7 +53,7 @@ namespace t_list
 		using erase                            = t_list::detail::erase_t  <idx, Ts...>;
 
 		// Acess first type in list
-		using front                            = t_list::detail::front_t<type_list<Ts...>>;
+		using front                            = t_list::detail::front_t    <type_list<Ts...>>;
 		// Add Args to front of list
 		template <typename... Args>
 		using append_front                     = type_list<Args..., Ts...>;
@@ -64,7 +64,7 @@ namespace t_list
 		using pop_front                        = t_list::detail::pop_front_t<type_list<Ts...>>;
 
 		// Access last type in list
-		using back                             = t_list::detail::back_t<type_list<Ts...>>;
+		using back                             = t_list::detail::back_t     <type_list<Ts...>>;
 		// Append Args to end of list
 		template <typename... Args>
 		using append                           = type_list<Ts..., Args...>;
@@ -85,23 +85,22 @@ namespace t_list
 		template <template <typename> class Predicate>
 		using filter                          = t_list::detail::type_list_filter_t<Predicate, Ts...>;
 
-		// All set ops are right to left associative (only matters for difference)
-		// setop_union - computes union between type_list<Ts...> and TList
+		// Computes union between type_list<Ts...> and TList
 		template<typename TList>
 		using setop_union                     = append_lists                          <type_list<Ts...>, TList>;		
-		// setop_union - computes intersection between type_list<Ts...> and TList
+		// Computes intersection between type_list<Ts...> and TList
 		template<typename TList>
 		using setop_intersection              = t_list::detail::intersection_t        <type_list<Ts...>, TList>;
-		// setop_union - computes difference between type_list<Ts...> and TList
+		// Computes difference between type_list<Ts...> and TList
 		template<typename TList>
 		using setop_difference                = t_list::detail::difference_t          <type_list<Ts...>, TList>;
-		// setop_union - computes symmetric difference between type_list<Ts...> and TList
+		// Computes symmetric difference between type_list<Ts...> and TList
 		template<typename TList>
 		using setop_symmetric_difference      = t_list::detail::symmetric_difference_t<type_list<Ts...>, TList>;
 		// Computes cartesian product between type_list<Ts...> and TList
 		template <typename TList>
-		using setop_cartesian_product         = t_list::detail::cartesian_product_t<type_list<Ts...>, TList>;
-		// setop_is_subset - true if type_list<Ts...> is a subset of TList
+		using setop_cartesian_product         = t_list::detail::cartesian_product_t   <type_list<Ts...>, TList>;
+		// True if type_list<Ts...> is a subset of TList
 		template<typename TList>
 		static constexpr bool setop_is_subset = std::is_same_v<type_list<Ts...>, setop_intersection<TList>>;
 
