@@ -154,6 +154,8 @@
     <ClInclude Include="Styles.h" />
     <ClInclude Include="TypeList.h" />
     <ClInclude Include="TypeList_Detail.h" />
+    <ClInclude Include="TypeList_Detail_IndexOps.h" />
+    <ClInclude Include="TypeList_Detail_SetOps.h" />
     <ClInclude Include="Window.h" />
     <ClInclude Include="Windows.h" />
   </ItemGroup>
