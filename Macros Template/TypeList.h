@@ -41,7 +41,7 @@ namespace t_list
 		// True if there are no duplicate types in list
 		static constexpr bool        is_unique              = detail::all_true_v<contains_unique<Ts>...>;
 		// True if all Ts in list are storable types
-		static constexpr bool        all_storable           = std::conjunction_v<detail::is_storable<Ts>...>;
+		static constexpr bool        all_storable           = detail::all_true_v<detail::is_storable_v<Ts>...>;
 
 		// Rebind Ts... to another template in the form of TTo<Ts...>
 		template <template<class...> class TTo>
@@ -103,7 +103,7 @@ namespace t_list
 		using append_conditional_front                  = detail::type_list_cat_t<typename type_list<Args...>::template filter<Predicate>, type>;
 		// Append Args to front of list if Predicate<Args, TList>::value == true
 		template <template <typename, typename> class Predicate, typename TList, typename... Args>
-		using append_conditional_front_binary          = detail::type_list_cat_t<typename type_list<Args...>::template filter<Predicate, TList>, type>;
+		using append_conditional_front_binary           = detail::type_list_cat_t<typename type_list<Args...>::template filter<Predicate, TList>, type>;
 
 		// Access last type in list  (non_existant if empty)
 		using back                                      = detail::back_t    <type>;
