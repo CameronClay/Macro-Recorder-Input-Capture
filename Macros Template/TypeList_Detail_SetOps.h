@@ -48,8 +48,8 @@ namespace t_list
 			using helper_t = typename filter_binary<Predicate, TList1<TList1Ts...>, list_2>::type;
 		public:
 			using type = typename helper_t::
-				template append_front_unique_conditional_binary<Predicate, Second, list_2>::
-				template append_front_unique_conditional_binary<Predicate, First, list_2>;
+				template append_front_unique_conditional_binary<Predicate, Second, list_2> ::
+				template append_front_unique_conditional_binary<Predicate, First,  list_2>;
 		};
 		template <template <typename, typename> class Predicate, template <typename...> class TList1, template <typename...> class TList2,
 			typename First, typename Second, typename Third,
@@ -60,9 +60,9 @@ namespace t_list
 			using helper_t = typename filter_binary<Predicate, TList1<TList1Ts...>, list_2>::type;
 		public:
 			using type = typename helper_t::
-				template append_front_unique_conditional_binary<Predicate, Third, list_2>::
-				template append_front_unique_conditional_binary<Predicate, Second, list_2>::
-				template append_front_unique_conditional_binary<Predicate, First, list_2>;
+				template append_front_unique_conditional_binary<Predicate, Third,  list_2> ::
+				template append_front_unique_conditional_binary<Predicate, Second, list_2> ::
+				template append_front_unique_conditional_binary<Predicate, First,  list_2>;
 		};
 		template <template <typename, typename> class Predicate, template <typename...> class TList1, template <typename...> class TList2,
 			typename First, typename Second, typename Third, typename Fourth,
@@ -73,10 +73,10 @@ namespace t_list
 			using helper_t = typename filter_binary<Predicate, TList1<TList1Ts...>, list_2>::type;
 		public:
 			using type = typename helper_t::
-				template append_front_unique_conditional_binary<Predicate, Fourth, list_2>::				
-				template append_front_unique_conditional_binary<Predicate, Third, list_2>::
-				template append_front_unique_conditional_binary<Predicate, Second, list_2>::
-				template append_front_unique_conditional_binary<Predicate, First, list_2>;
+				template append_front_unique_conditional_binary<Predicate, Fourth, list_2> ::				
+				template append_front_unique_conditional_binary<Predicate, Third,  list_2> ::
+				template append_front_unique_conditional_binary<Predicate, Second, list_2> ::
+				template append_front_unique_conditional_binary<Predicate, First,  list_2>;
 		};
 		template <template <typename, typename> class Predicate, template <typename...> class TList1, template <typename...> class TList2,
 			typename First, typename Second, typename Third, typename Fourth, typename Fifth,
@@ -87,11 +87,11 @@ namespace t_list
 			using helper_t = typename filter_binary<Predicate, TList1<TList1Ts...>, list_2>::type;
 		public:
 			using type = typename helper_t::
-				template append_front_unique_conditional_binary<Predicate, Fifth, list_2>::
-				template append_front_unique_conditional_binary<Predicate, Fourth, list_2>::
-				template append_front_unique_conditional_binary<Predicate, Third, list_2>::
-				template append_front_unique_conditional_binary<Predicate, Second, list_2>::
-				template append_front_unique_conditional_binary<Predicate, First, list_2>;
+				template append_front_unique_conditional_binary<Predicate, Fifth,  list_2> ::
+				template append_front_unique_conditional_binary<Predicate, Fourth, list_2> ::
+				template append_front_unique_conditional_binary<Predicate, Third,  list_2> ::
+				template append_front_unique_conditional_binary<Predicate, Second, list_2> ::
+				template append_front_unique_conditional_binary<Predicate, First,  list_2>;
 		};
 		template <template <typename, typename> class Predicate, template <typename...> class TList1, template <typename...> class TList2, 
 			      typename First, typename Second, typename Third, typename Fourth, typename Fifth,
@@ -103,16 +103,16 @@ namespace t_list
 			using helper_t = typename filter_binary<Predicate, TList1<TList1Ts...>, list_2>::type;
 		public:
 			using type = typename helper_t::
-				template append_front_unique_conditional_binary<Predicate, Tenth, list_2>::
-				template append_front_unique_conditional_binary<Predicate, Nineth, list_2>::
-				template append_front_unique_conditional_binary<Predicate, Eighth, list_2>::
-				template append_front_unique_conditional_binary<Predicate, Seventh, list_2>::
-				template append_front_unique_conditional_binary<Predicate, Sixth, list_2>::
-				template append_front_unique_conditional_binary<Predicate, Fifth, list_2>::
-				template append_front_unique_conditional_binary<Predicate, Fourth, list_2>::
-				template append_front_unique_conditional_binary<Predicate, Third, list_2>::
-				template append_front_unique_conditional_binary<Predicate, Second, list_2>::
-				template append_front_unique_conditional_binary<Predicate, First, list_2>;
+				template append_front_unique_conditional_binary<Predicate, Tenth,   list_2> ::
+				template append_front_unique_conditional_binary<Predicate, Nineth,  list_2> ::
+				template append_front_unique_conditional_binary<Predicate, Eighth,  list_2> ::
+				template append_front_unique_conditional_binary<Predicate, Seventh, list_2> ::
+				template append_front_unique_conditional_binary<Predicate, Sixth,   list_2> ::
+				template append_front_unique_conditional_binary<Predicate, Fifth,   list_2> ::
+				template append_front_unique_conditional_binary<Predicate, Fourth,  list_2> ::
+				template append_front_unique_conditional_binary<Predicate, Third,   list_2> ::
+				template append_front_unique_conditional_binary<Predicate, Second,  list_2> ::
+				template append_front_unique_conditional_binary<Predicate, First,   list_2>;
 		};
 		template <template <typename, typename> class Predicate, typename TList1, typename TList2>
 		using filter_binary_t = typename filter_binary<Predicate, TList1, TList2>::type;
@@ -208,7 +208,7 @@ namespace t_list
 			TList2<Us...>>
 		{
 			using type = append_t<typename cartesian_product<TList1<Ts...>, TList2<Us...>>::type,
-				pair<First, Us>..., pair<Second, Us>...,  pair<Third, Us>...,  pair<Fourth, Us>..., pair<Fifth, Us>...,
+				pair<First, Us>..., pair<Second,  Us>..., pair<Third,  Us>..., pair<Fourth, Us>..., pair<Fifth, Us>...,
 				pair<Sixth, Us>..., pair<Seventh, Us>..., pair<Eighth, Us>..., pair<Nineth, Us>..., pair<Tenth, Us>...>;
 		};
 		template <typename TList1, typename TList2>

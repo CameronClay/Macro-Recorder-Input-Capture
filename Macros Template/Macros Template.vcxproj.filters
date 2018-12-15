@@ -128,5 +128,8 @@
     <ClInclude Include="TypeList_Detail_SetOps.h">
       <Filter>Header Files\TypeList</Filter>
     </ClInclude>
+    <ClInclude Include="TypeList_Helpers.h">
+      <Filter>Header Files\TypeList</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
