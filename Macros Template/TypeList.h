@@ -13,6 +13,8 @@ namespace t_list
 	{
 		// Alias for type of current type_list
 		using type                                          = type_list;
+		// Remove all elements from list
+		using clear                                         = type_list<>;
 		// Applies Ts to std::tuple
 		using tuple                                         = std::tuple<Ts...>;
 		// Represents type that does not exist
@@ -53,8 +55,6 @@ namespace t_list
 		template <class TList, template<class...> class TTo_First, template<class...> class... TTo_Rest>
 		using apply_binary                              = detail::apply_binary_t <type, TList, TTo_First, TTo_Rest...>;
 
-		// Remove all elements from list
-		using clear                                     = type_list<>;
 		// Reverse all Ts in list
 		using reverse                                   = detail::reverse_t<type>;
 		// Remove duplicates from list
@@ -166,14 +166,14 @@ namespace t_list
 		template <template <typename> class Predicate>
 		static constexpr bool        all_match_predicate()
 		{
-			return std::conjunction_v<Predicate<Ts>...>;
+			return detail::all_true_v<Predicate<Ts>::value...>;
 		}
 		// True if Predicate<Ts, Args>::value... for all Ts and Args is true
 		template <template <typename, typename> class Predicate, typename... Args>
 		static constexpr bool	    all_match_predicate()
 		{
 			if constexpr (sizeof... (Args) == n_types)
-				return std::conjunction_v<Predicate<Ts, Args>...>;
+				return detail::all_true_v<Predicate<Ts, Args>::value...>;
 
 			return false;
 		}
@@ -189,7 +189,7 @@ namespace t_list
 		static constexpr bool       is_convertible()
 		{
 			if constexpr (sizeof... (Args) == n_types)
-				return std::conjunction_v<std::is_convertible<std::decay_t<Ts>, std::decay_t<Args>>...>;
+				return detail::all_true_v<std::is_convertible_v<std::decay_t<Ts>, std::decay_t<Args>>...>;
 
 			return false;
 		}
