@@ -40,7 +40,7 @@ bool InputHandler::operator==(const std::vector<TCHAR>& vKeys) const
 	if (vKeys.size() != toggleVKeys.size())
 		return false;
 
-	for (int i = 0, size = toggleVKeys.size(); i < size; ++i)
+	for (std::size_t i = 0u, size = toggleVKeys.size(); i < size; ++i)
 	{
 		if (vKeys[i] != toggleVKeys[i])
 			return false;
@@ -104,6 +104,8 @@ bool InputHandler::Load(const char* filename)
 			return Input(MouseScrollData{ stream });
 		case KbdData::uuid:
 			return Input(KbdData{ stream });
+		default:
+			return Input();
 		}
 	};
 
@@ -133,7 +135,7 @@ bool InputHandler::Save(const char* filename)
 	if (!stream.is_open() || stream.fail())
 		return false;
 
-	const int nKeys = toggleVKeys.size();
+	const std::size_t nKeys = toggleVKeys.size();
 	stream.write((char*)&nKeys, sizeof(int));
 
 	for (const auto& it : toggleVKeys)

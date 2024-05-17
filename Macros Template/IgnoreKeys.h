@@ -16,7 +16,7 @@ public:
 
 	Ignorekeys() = default;
 
-	void SetKeys(std::vector<KeyEntry> ignoreList);
+	void SetKeys(const std::vector<KeyEntry>& ignoreList);
 	void SetKeys(std::initializer_list<KeyEntry> ignoreList);
 	bool KeyIgnored(const RAWKEYBOARD& kbd);
 private:

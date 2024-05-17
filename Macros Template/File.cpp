@@ -25,7 +25,7 @@ std::vector<std::string> File::GetFileList(const std::string& dir, const std::ve
 			}
 		}
 	}
-	catch (std::system_error& e)
+	catch (...)
 	{
 		//std::cerr << "Exception: " << e.what();
 	}

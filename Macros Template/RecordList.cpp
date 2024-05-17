@@ -36,7 +36,7 @@ RecordList::~RecordList(){}
 bool RecordList::Initialize(const TCHAR* workingDir)
 {
 	auto fileList = File::GetFileList(workingDir);
-	for (size_t i = 0, size = fileList.size(); i < size; ++i)
+	for (size_t i = 0u, size = fileList.size(); i < size; ++i)
 	{
 		records.emplace_back();
 		records[i].handler.Load(fileList[i].c_str());
@@ -47,10 +47,10 @@ bool RecordList::Initialize(const TCHAR* workingDir)
 
 int RecordList::SelectRecord(const RAWKEYBOARD& kbd)
 {
-	for (size_t i = 0, size = records.size(); i < size; ++i)
+	for (size_t i = 0u, size = records.size(); i < size; ++i)
 	{
 		if (records[i].handler.CheckForToggle(kbd))
-			return currentRecord = i;
+			return currentRecord = static_cast<int>(i);
 	}
 	return RecordList::INVALID;
 }
@@ -71,7 +71,7 @@ bool RecordList::AddRecord(const std::vector<TCHAR>& toggleVKeys)
 	if (index != RecordList::INVALID)
 		return false;
 
-	currentRecord = records.size();
+	currentRecord = static_cast<int>(records.size());
 	records.emplace_back(toggleVKeys);
 	return true;
 }
@@ -99,15 +99,20 @@ bool RecordList::DeleteRecord(const std::vector<TCHAR>& toggleVKeys)
 
 int RecordList::FindRecord(const std::vector<TCHAR>& toggleVKeys) const
 {
-	for (size_t i = 0, size = records.size(); i < size; ++i)
+	for (size_t i = 0u, size = records.size(); i < size; ++i)
 	{
 		if (records[i].handler == toggleVKeys)
-			return i;
+			return static_cast<int>(i);
 	}
 	return RecordList::INVALID;
 }
 
-Input* RecordList::GetBack() const
+const Input* RecordList::GetBack() const
+{
+	return (currentRecord != RecordList::INVALID) ? records[currentRecord].handler.GetBack() : nullptr;
+}
+
+Input* RecordList::GetBack()
 {
 	return (currentRecord != RecordList::INVALID) ? records[currentRecord].handler.GetBack() : nullptr;
 }

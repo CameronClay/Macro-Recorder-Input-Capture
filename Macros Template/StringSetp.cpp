@@ -24,7 +24,7 @@ bool StringSet::RemoveString(const std::string& str)
 	return res;
 }
 
-std::unordered_set<std::string>& StringSet::GetOutStrings()
+const std::unordered_set<std::string>& StringSet::GetOutStrings()
 {
 	return outStrings;
 }

@@ -12,7 +12,7 @@ namespace SimInp
 	bool SendKbd(WORD key, DWORD delayMilli = 0);
 	void KeyCombo(std::initializer_list<TCHAR> keys);
 	void KeyCombo(const std::vector<TCHAR>& keys);
-	void SendKbd(const TCHAR* str, int len);
+	void SendKbd(const TCHAR* str, UINT len);
 
 	//--Scan Codes
 	bool SendKbdDownSC(WORD key, bool E0 = false);
@@ -20,7 +20,7 @@ namespace SimInp
 	bool SendKbdSC(WORD key, bool E0 = false, DWORD delayMilli = 0);
 	void KeyComboSC(std::initializer_list<std::pair<WORD, bool>> keys);
 	void KeyComboSC(const std::vector<std::pair<WORD, bool>>& keys);
-	void SendKbdSC(const TCHAR* str, int len);
+	void SendKbdSC(const TCHAR* str, UINT len);
 
 	//-Mouse Functions
 	bool SendClickDown(bool left, bool right, bool middle);

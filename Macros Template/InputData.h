@@ -147,7 +147,7 @@ public:
 			using type = std::decay_t<decltype(_data)>;
 			if constexpr (std::is_same_v<type, DelayData>)
 			{
-				_data.AddDelay(_delay);
+				_data.AddDelay(static_cast<DWORD>(_delay));
 				return true;
 			}
 

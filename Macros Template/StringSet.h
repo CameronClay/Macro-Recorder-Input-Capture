@@ -17,7 +17,7 @@ public:
 	void Lock();
 	void Unlock();
 
-	std::unordered_set<std::string>& GetOutStrings();
+	const std::unordered_set<std::string>& GetOutStrings();
 private:
 	std::unordered_set<std::string> outStrings;
 	std::mutex mut;

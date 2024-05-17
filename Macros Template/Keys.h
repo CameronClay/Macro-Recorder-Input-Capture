@@ -18,12 +18,12 @@ public:
 	static TCHAR ScanCodeToVirtualKey(WORD scan);
 
 	bool IsPressed(unsigned char vKey) const;
-	bool IsPressedCombo(std::initializer_list<TCHAR> vKeys);
-	bool IsPressedCombo(std::vector<TCHAR> vKeys);
+	bool IsPressedCombo(std::initializer_list<TCHAR> vKeys) const;
+	bool IsPressedCombo(const std::vector<TCHAR>& vKeys) const;
 
 	bool IsPressedSC(unsigned char sc) const;
-	bool IsPressedComboSC(std::initializer_list<TCHAR> scs);
-	bool IsPressedComboSC(std::vector<TCHAR> scs);
+	bool IsPressedComboSC(std::initializer_list<TCHAR> scs) const;
+	bool IsPressedComboSC(const std::vector<TCHAR>& scs) const;
 private:
 	void OnPress(unsigned char vKey);
 	void OnRelease(unsigned char vKey);

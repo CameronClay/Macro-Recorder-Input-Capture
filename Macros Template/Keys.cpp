@@ -31,11 +31,11 @@ bool Keys::IsPressed(unsigned char vKey) const
 {
 	return keyStates[vKey];
 }
-bool Keys::IsPressedCombo(std::initializer_list<TCHAR> vKeys)
+bool Keys::IsPressedCombo(std::initializer_list<TCHAR> vKeys) const
 {
 	if (vKeys.size() != 0)
 	{
-		for(auto& k : vKeys)
+		for(const auto& k : vKeys)
 			if(!IsPressed(k))
 				return false;
 
@@ -43,11 +43,11 @@ bool Keys::IsPressedCombo(std::initializer_list<TCHAR> vKeys)
 	}
 	return false;
 }
-bool Keys::IsPressedCombo(std::vector<TCHAR> vKeys)
+bool Keys::IsPressedCombo(const std::vector<TCHAR>& vKeys) const
 {
 	if (vKeys.size() != 0)
 	{
-		for (auto& k : vKeys)
+		for (const auto& k : vKeys)
 			if (!IsPressed(k))
 				return false;
 
@@ -60,11 +60,11 @@ bool Keys::IsPressedSC(unsigned char sc) const
 {
 	return IsPressed(ScanCodeToVirtualKey(sc));
 }
-bool Keys::IsPressedComboSC(std::initializer_list<TCHAR> scs)
+bool Keys::IsPressedComboSC(std::initializer_list<TCHAR> scs) const
 {
 	if (scs.size() != 0)
 	{
-		for (auto& k : scs)
+		for (const auto& k : scs)
 			if (!IsPressedSC(k))
 				return false;
 
@@ -72,11 +72,11 @@ bool Keys::IsPressedComboSC(std::initializer_list<TCHAR> scs)
 	}
 	return false;
 }
-bool Keys::IsPressedComboSC(std::vector<TCHAR> scs)
+bool Keys::IsPressedComboSC(const std::vector<TCHAR>& scs) const
 {
 	if (scs.size() != 0)
 	{
-		for (auto& k : scs)
+		for (const auto& k : scs)
 			if (!IsPressedSC(k))
 				return false;
 

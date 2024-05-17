@@ -3,6 +3,7 @@
 #include <initializer_list>
 #include <vector>
 
+//Check down or released state of VKs (Virtual Keys) and SCs (Scan Codes)
 namespace CheckKey
 {
 	bool VKDown(const RAWKEYBOARD& kbd, TCHAR vKey);

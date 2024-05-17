@@ -112,9 +112,9 @@ LRESULT CALLBACK MainWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 
 		auto& strings = outStrings.GetOutStrings();
 		outStrings.Lock();
-		for (auto& it : strings)
+		for (const auto& it : strings)
 		{
-			TextOut(hdc, 0, yPos, it.c_str(), it.size());
+			TextOut(hdc, 0, yPos, it.c_str(), static_cast<int>(it.size()));
 			yPos += 30;
 		}
 		outStrings.Unlock();
@@ -144,7 +144,7 @@ void MainWindow::MouseBIProc(const RAWMOUSE& mouse, DWORD delay)
 		if (delay != 0)
 		{
 			Input* ptr = recordList.GetBack();
-			if (!ptr->AddDelay(delay))
+			if (!ptr->AddDelay(static_cast<float>(delay)))
 				recordList.AddEventToRecord<DelayData>(delay);
 		}
 
@@ -215,9 +215,9 @@ void MainWindow::MouseBIProc(const RAWMOUSE& mouse, DWORD delay)
 void MainWindow::KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 {
 	if ((kbd.Message == WM_KEYDOWN) || (kbd.Message == WM_SYSKEYDOWN))
-		keys.OnPress(kbd.VKey);
+		keys.OnPress(static_cast<unsigned char>(kbd.VKey));
 	else if((kbd.Message == WM_KEYUP) || (kbd.Message == WM_SYSKEYUP))
-		keys.OnRelease(kbd.VKey);
+		keys.OnRelease(static_cast<unsigned char>(kbd.VKey));
 
 	//if (/*!(bool)(kbd.Flags & RI_KEY_BREAK) && */(kbd.MakeCode == keys.VirtualKeyToScanCode(VK_TAB)))
 	//{
@@ -237,7 +237,7 @@ void MainWindow::KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 	{
 		if (kbd.Message == WM_KEYDOWN)
 		{
-			comboRec.AddVKey(kbd.VKey);
+			comboRec.AddVKey(static_cast<TCHAR>(kbd.VKey));
 			return;
 		}
 		else if (comboRec.HasRecorded())
@@ -265,7 +265,7 @@ void MainWindow::KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 	{
 		if (kbd.Message == WM_KEYDOWN)
 		{
-			comboRec.AddVKey(kbd.VKey);
+			comboRec.AddVKey(static_cast<TCHAR>(kbd.VKey));
 			return;
 		}
 		else if (comboRec.HasRecorded())
@@ -393,7 +393,7 @@ void MainWindow::KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 			if (delay != 0)
 			{
 				Input* ptr = recordList.GetBack();
-				if (!ptr->AddDelay(delay))
+				if (!ptr->AddDelay(static_cast<float>(delay)))
 					recordList.AddEventToRecord<DelayData>(delay);
 			}
 

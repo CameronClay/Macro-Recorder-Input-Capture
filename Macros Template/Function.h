@@ -108,6 +108,5 @@ public:
 		return func;
 	}
 
-
 	Action action;
 };

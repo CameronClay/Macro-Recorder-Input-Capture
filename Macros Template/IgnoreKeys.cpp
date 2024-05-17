@@ -8,9 +8,9 @@ Ignorekeys::KeyEntry::KeyEntry(WORD vKey, DWORD Message, bool oneTime)
 	oneTime(oneTime)
 {}
 
-void Ignorekeys::SetKeys(std::vector<KeyEntry> ignoreList)
+void Ignorekeys::SetKeys(const std::vector<KeyEntry>& ignoreList)
 {
-	this->ignoreList = std::move(ignoreList);
+	this->ignoreList = ignoreList;
 }
 
 void Ignorekeys::SetKeys(std::initializer_list<KeyEntry> ignoreList)
