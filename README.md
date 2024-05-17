@@ -4,3 +4,7 @@ Program able to record, capture, and simulae keyboard and mouse input with a tex
 
 # Help
 Menu and controls are displayed on the overlapped menu.
+
+## Tooling
+- C++
+- Win32 API
