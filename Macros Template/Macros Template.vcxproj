@@ -131,7 +131,7 @@
     <ClCompile Include="RawInp.cpp" />
     <ClCompile Include="RecordList.cpp" />
     <ClCompile Include="SimInp.cpp" />
-    <ClCompile Include="StringSetp.cpp" />
+    <ClCompile Include="StringSet.cpp" />
     <ClCompile Include="Styles.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="windows.cpp" />

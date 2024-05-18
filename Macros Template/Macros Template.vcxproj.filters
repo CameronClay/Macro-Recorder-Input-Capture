@@ -54,7 +54,7 @@
     <ClCompile Include="Event.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="StringSetp.cpp">
+    <ClCompile Include="StringSet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Styles.cpp">
