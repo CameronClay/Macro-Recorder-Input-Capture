@@ -1,5 +1,4 @@
 # Macro Recorder (Input-Capture)
-# About
 Program able to record, capture, and simulate keyboard and mouse input with a text based overlapped-interface. Utilizes raw input; raw input is raw device input before it is modified by windows. Using raw input makes clicks and keyboard presses feel more responsive and smooth compared to standard input.
 
 # Controls
