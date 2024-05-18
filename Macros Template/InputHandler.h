@@ -17,14 +17,12 @@ public:
 	void Cleanup();
 
 	template<typename T, typename... Args>
-	void Add(Args&&... vals)
-	{
+	void Add(Args&&... vals) {
 		inputs.emplace_back(T{ std::forward<Args>(vals)... });
 	}
 
 	template<typename T>
-	void Add(T&& val)
-	{
+	void Add(T&& val) {
 		inputs.push_back(std::move(val));
 	}
 
@@ -33,6 +31,7 @@ public:
 	bool Load(const char* filename);
 	bool Save(const char* filename);
 
+	std::size_t GetCount() const;
 	Input* GetBack() const;
 	void PopBack();
 
@@ -43,7 +42,7 @@ public:
 	bool HasRecorded() const;
 	bool CheckForToggle(const RAWKEYBOARD& kbd) const;
 
-	std::string FormatVKeys();
+	std::string FormatVKeys() const;
 private:
 	std::vector<TCHAR> toggleVKeys;
 	std::vector<Input> inputs;

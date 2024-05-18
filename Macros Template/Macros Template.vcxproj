@@ -152,6 +152,7 @@
     <ClInclude Include="SimInp.h" />
     <ClInclude Include="StringSet.h" />
     <ClInclude Include="Styles.h" />
+    <ClInclude Include="Text.h" />
     <ClInclude Include="TypeList.h" />
     <ClInclude Include="TypeList_Detail.h" />
     <ClInclude Include="TypeList_Detail_IndexOps.h" />

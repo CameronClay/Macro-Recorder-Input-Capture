@@ -2,20 +2,17 @@
 #include <tchar.h>
 #include <assert.h>
 
-void RawInp::Input(HINSTANCE hInst, RawInp& rawInp)
-{
+void RawInp::Input(HINSTANCE hInst, RawInp& rawInp) {
 	if (!rawInp.wnd.Create(0, 0, 0, 0, _T("RAW_INPUT"), _T("RAW_INPUT"), true))
 		return;
 
-	if (!rawInp.InitializeInputDevices())
-	{
+	if (!rawInp.InitializeInputDevices()) {
 		Window::MsgBox(_T("Call to InitializeInputDevices failed!"));
 		return;
 	}
 
 	MSG msg {};
-	while (GetMessage(&msg, 0, 0, 0))
-	{
+	while (GetMessage(&msg, 0, 0, 0)) {
 		rawInp.UpdateTimeStamp(msg.time);
 		DispatchMessage(&msg);
 	}
@@ -31,18 +28,15 @@ RawInp::RawInp(HINSTANCE hInst, MOUSEPROC mouseProc, KBDPROC kbdProc)
 	curTime(0)
 {}
 
-RawInp::~RawInp()
-{
+RawInp::~RawInp() {
 	wnd.Close();
 	thrd.join();
 }
 
-bool RawInp::InitializeInputDevices()
-{
+bool RawInp::InitializeInputDevices() {
 	int deviceIndex = 0;
 	RAWINPUTDEVICE rid[] = { {},{} };
-	if (kbdProc)
-	{
+	if (kbdProc) {
 		rid[deviceIndex].usUsagePage = 0x01;
 		rid[deviceIndex].usUsage = 0x06;
 		rid[deviceIndex].dwFlags = RIDEV_INPUTSINK | RIDEV_NOLEGACY;
@@ -51,8 +45,7 @@ bool RawInp::InitializeInputDevices()
 		++deviceIndex;
 	}
 
-	if (mouseProc)
-	{
+	if (mouseProc) {
 		rid[deviceIndex].usUsagePage = 0x01;
 		rid[deviceIndex].usUsage = 0x02;
 		rid[deviceIndex].dwFlags = RIDEV_INPUTSINK | RIDEV_NOLEGACY;
@@ -64,15 +57,13 @@ bool RawInp::InitializeInputDevices()
 	return RegisterRawInputDevices(rid, deviceIndex, sizeof(RAWINPUTDEVICE)) == TRUE;
 }
 
-void RawInp::UpdateTimeStamp(DWORD t)
-{
+void RawInp::UpdateTimeStamp(DWORD t) {
 	prevTime = curTime;
 	curTime = t;
 }
 
 
-LRESULT CALLBACK RawInp::RawInputProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
+LRESULT CALLBACK RawInp::RawInputProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	switch (message)
 	{
 	case WM_INPUT:

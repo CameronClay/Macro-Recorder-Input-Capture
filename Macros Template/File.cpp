@@ -4,14 +4,11 @@ std::vector<std::string> File::GetFileList(const std::string& dir, const std::ve
 {
 	std::vector<std::string> fileList;
 
-	try 
-	{
-		if (fs::exists(dir) && fs::is_directory(dir))
-		{
+	try  {
+		if (fs::exists(dir) && fs::is_directory(dir)) {
 			fs::recursive_directory_iterator it{ dir }, end;
 
-			while (it != end)
-			{
+			while (it != end) {
 				if (fs::is_directory(it->path()) && (std::find(dirSkipList.begin(), dirSkipList.end(), it->path().filename()) != dirSkipList.end()))
 					it.disable_recursion_pending();
 				else
@@ -25,8 +22,7 @@ std::vector<std::string> File::GetFileList(const std::string& dir, const std::ve
 			}
 		}
 	}
-	catch (...)
-	{
+	catch (...) {
 		//std::cerr << "Exception: " << e.what();
 	}
 

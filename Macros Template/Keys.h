@@ -28,6 +28,6 @@ private:
 	void OnPress(unsigned char vKey);
 	void OnRelease(unsigned char vKey);
 
-	static constexpr unsigned int nKeys = 256u;
+	static constexpr std::size_t nKeys = 256u;
 	std::bitset<nKeys> keyStates;
 };

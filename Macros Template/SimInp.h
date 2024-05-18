@@ -27,11 +27,12 @@ namespace SimInp
 	bool SendClickUp(bool left, bool right, bool middle);
 	bool SendClick(bool left, bool right, bool middle, DWORD delayMilli = 0);
 
+	//X (Extra) mouse buttons
 	bool SendXClickDown(bool xButton1, bool xButton2);
 	bool SendXClickUp(bool xButton1, bool xButton2);
 	bool SendXClick(bool xButton1, bool xButton2, DWORD delayMilli = 0);
 
-	//If absolute x and y are normalized coordinates from 0 to 65,535
+	//If absolute is true, x and y are normalized coordinates from 0 to 65,535
 	bool SendMousePosition(int x, int y, bool absolute = false);
 	void MouseMove(int x, int y, DWORD duration, DWORD freq);
 

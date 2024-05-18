@@ -5,8 +5,7 @@ Event::Event(bool initialState)
 	isSet(initialState)
 {}
 
-void Event::Set(bool all)
-{
+void Event::Set(bool all) {
 	std::lock_guard<std::mutex> lock{ mutex };
 	isSet = true;
 
@@ -16,14 +15,12 @@ void Event::Set(bool all)
 		cv.notify_one();
 }
 
-void Event::Reset()
-{
+void Event::Reset() {
 	std::lock_guard<std::mutex> lock{ mutex };
 	isSet = false;
 }
 
-void Event::Wait()
-{
+void Event::Wait() {
 	std::unique_lock<std::mutex> lock{ mutex };
 	if (isSet)
 		return;
@@ -31,8 +28,7 @@ void Event::Wait()
 	cv.wait(lock, [this] { return isSet; });
 }
 
-bool Event::WaitFor(uint32_t timeMilli)
-{
+bool Event::WaitFor(uint32_t timeMilli) {
 	std::unique_lock<std::mutex> lock{ mutex };
 	if (isSet)
 		return true;
@@ -47,26 +43,22 @@ EventAutoReset::EventAutoReset(bool initialState)
 	counter(0)
 {}
 
-void EventAutoReset::Set(uint32_t waitCount)
-{
+void EventAutoReset::Set(uint32_t waitCount) {
 	std::lock_guard<std::mutex> lock{ mutex };
 	counter = waitCount;
 	isSet = true;
 	cv.notify_all();
 }
 
-void EventAutoReset::Reset()
-{
+void EventAutoReset::Reset() {
 	std::lock_guard<std::mutex> lock{ mutex };
 	counter = 0;
 	isSet = false;
 }
 
-void EventAutoReset::Wait()
-{
+void EventAutoReset::Wait() {
 	std::unique_lock<std::mutex> lock{ mutex };
-	if (isSet)
-	{
+	if (isSet) {
 		if (--counter == 0)
 			isSet = false;
 		return;
@@ -78,18 +70,15 @@ void EventAutoReset::Wait()
 		isSet = false;
 }
 
-bool EventAutoReset::WaitFor(uint32_t timeMilli)
-{
+bool EventAutoReset::WaitFor(uint32_t timeMilli) {
 	std::unique_lock<std::mutex> lock{ mutex };
-	if (isSet)
-	{
+	if (isSet) {
 		if (--counter == 0)
 			isSet = false;
 		return true;
 	}
 
-	if (cv.wait_for(lock, std::chrono::milliseconds(timeMilli), [this] { return isSet; }))
-	{
+	if (cv.wait_for(lock, std::chrono::milliseconds(timeMilli), [this] { return isSet; })) {
 		if (--counter == 0)
 			isSet = false;
 		return true;

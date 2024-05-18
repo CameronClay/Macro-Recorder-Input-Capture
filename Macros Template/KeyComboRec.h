@@ -2,6 +2,7 @@
 #include <vector>
 #include <tchar.h>
 
+//Records key combinations for accessing the menu
 class KeyComboRec
 {
 public:

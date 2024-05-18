@@ -1,38 +1,31 @@
 #include "StringSet.h"
 
-void StringSet::AddStringNL(const std::string& str)
-{
-	outStrings.emplace(str);
-}
-bool StringSet::RemoveStringNL(const std::string& str)
-{
-	return outStrings.erase(str);
-}
-
-void StringSet::AddString(const std::string& str)
-{
+void StringSet::AddStringNL(const std::string& str) {
 	Lock();
-	AddStringNL(str);
+	outStrings.emplace(str);
 	Unlock();
 }
-bool StringSet::RemoveString(const std::string& str)
-{
+bool StringSet::RemoveStringNL(const std::string& str) {
 	Lock();
-	const size_t res = RemoveStringNL(str);
+	const size_t res = outStrings.erase(str);
 	Unlock();
 
 	return res;
 }
 
-const std::unordered_set<std::string>& StringSet::GetOutStrings()
-{
+void StringSet::AddString(const std::string& str) {
+	return AddStringNL(str);
+}
+bool StringSet::RemoveString(const std::string& str) {
+	return RemoveStringNL(str);
+}
+
+const std::unordered_set<std::string>& StringSet::GetOutStrings() const {
 	return outStrings;
 }
-void StringSet::Lock()
-{
+void StringSet::Lock() {
 	mut.lock();
 }
-void StringSet::Unlock()
-{
+void StringSet::Unlock() {
 	mut.unlock();
 }

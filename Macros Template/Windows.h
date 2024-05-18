@@ -12,6 +12,16 @@
 #include "IgnoreKeys.h"
 #include "File.h"
 #include "Styles.h"
+#include <tchar.h>
+
+//Window constants
+const TCHAR szWindowClass[] = _T("Macros");
+const TCHAR szTitle[] = _T("Macros");
+const COLORREF BACK_COLOR = RGB(150, 150, 150); //background color
+const COLORREF TEXT_COLOR = RGB(0, 0, 0);//text color
+
+//Records directory
+const TCHAR DIRECTORY[] = _T("Records");
 
 class MainWindow : public Window
 {

@@ -113,40 +113,31 @@ public:
 		data(std::move(_value))
 	{}
 
-	void ReadData(std::ifstream& is)
-	{
-		auto read_data = [&](auto& _data)
-		{
+	void ReadData(std::ifstream& is) {
+		auto read_data = [&](auto& _data) {
 			_data.ReadData(is);
 		};
 
 		std::visit(read_data, data);
 	}
-	void SaveData(std::ostream& os) const
-	{
-		auto write_data = [&](const auto& _data)
-		{
+	void SaveData(std::ostream& os) const {
+		auto write_data = [&](const auto& _data) {
 			_data.SaveData(os);
 		};
 
 		std::visit(write_data, data);
 	}
-	void Simulate() const
-	{
-		auto simulate = [](const auto& _data)
-		{
+	void Simulate() const {
+		auto simulate = [](const auto& _data) {
 			_data.Simulate();
 		};
 
 		std::visit(simulate, data);
 	}
-	bool AddDelay(float _delay)
-	{
-		auto add_delay = [&](auto& _data)
-		{
+	bool AddDelay(float _delay) {
+		auto add_delay = [&](auto& _data) {
 			using type = std::decay_t<decltype(_data)>;
-			if constexpr (std::is_same_v<type, DelayData>)
-			{
+			if constexpr (std::is_same_v<type, DelayData>) {
 				_data.AddDelay(static_cast<DWORD>(_delay));
 				return true;
 			}
@@ -158,10 +149,8 @@ public:
 	}
 
 	template<typename T, typename IfSame, typename IfNotSame>
-	void ConditionalCall(IfSame&& _ifsame, IfNotSame&& _ifnotsame)
-	{
-		auto call = [&](auto& _data)
-		{
+	void ConditionalCall(IfSame&& _ifsame, IfNotSame&& _ifnotsame) {
+		auto call = [&](auto& _data) {
 			using type = std::decay_t<decltype(_data)>;
 			if constexpr (std::is_same_v<type, T>)
 				_ifsame(_data);

@@ -12,6 +12,8 @@
 #include "StringSet.h"
 #include "IgnoreKeys.h"
 #include "File.h"
+#include "Text.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <windows.h>
@@ -23,19 +25,8 @@
 #include <assert.h>
 #include <string>
 #include "Windows.h"
+
 #pragma comment(lib, "Winmm.lib")
-
-const TCHAR szWindowClass[] = _T("Macros");
-const TCHAR szTitle[] = _T("Macros");
-
-const TCHAR DIRECTORY[] = _T("Records");
-
-const TCHAR INSTRUCTIONS[] = _T("| SELECT / TOGGLE_REC - CTRL + F1 | SIM - CTRL + F2 | ADD - CTRL + MENU + A | DEL - CTRL + MENU + D | EXIT - CTRL + DOWN | ");
-const TCHAR ADDINGRECORD[] = _T("Adding Record... waiting for key combination");
-const TCHAR DELETINGRECORD[] = _T("Deleting Record... waiting for key combination");
-const TCHAR RECORDING[] = _T("Recording....");
-const TCHAR SIMUALTINGRECORD[] = _T("Simulating Record...");
-const TCHAR CURRENTRECORD[] = _T("Current Record = ");
 
 MainWindow::MainWindow(HINSTANCE hInst)
 	:
@@ -53,8 +44,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	window.SetLayeredAttrib(255);
 
 	MSG msg = {};
-	while (GetMessage(&msg, NULL, NULL, NULL))
-	{
+	while (GetMessage(&msg, NULL, NULL, NULL)) {
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
@@ -62,8 +52,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	return (int)msg.wParam;
 }
 
-LRESULT CALLBACK MainWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
+LRESULT CALLBACK MainWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	switch (message)
 	{
 	case WM_COMMAND:
@@ -77,6 +66,7 @@ LRESULT CALLBACK MainWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 	}
 	case WM_CREATE:
 	{
+		// Create Records directory if it does not exist
 		if (!fs::exists(DIRECTORY))
 			fs::create_directory(DIRECTORY);
 
@@ -87,7 +77,7 @@ LRESULT CALLBACK MainWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 		
 		rawInput = std::make_unique<RawInp>(hInst, MOUSEPROC{ &MainWindow::MouseBIProc, this }, KBDPROC{ &MainWindow::KbdBIProc, this });
 
-		outStrings.AddString(INSTRUCTIONS);
+		outStrings.AddString(Text::INSTRUCTIONS);
 
 		break;
 	}
@@ -96,24 +86,22 @@ LRESULT CALLBACK MainWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 		PAINTSTRUCT ps;
 		HDC hdc = BeginPaint(hWnd, &ps);
 
-		if (!styles.initialized)
-		{
+		if (!styles.initialized) {
 			auto hf = CreateFont(-MulDiv(12, GetDeviceCaps(hdc, LOGPIXELSY), 72), 0, 0, 0, FW_SEMIBOLD, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, NONANTIALIASED_QUALITY, DEFAULT_PITCH | FF_MODERN, _T("Arial"));
 			auto hp = CreatePen(PS_SOLID, 1, RGB(0, 255, 0));
 			auto hb = CreateSolidBrush(RGB(255, 255, 255));
 			auto clrb = CreateSolidBrush(RGB(255, 0, 255));
 
-			styles.Initalize(hdc, hp, hb, clrb, hf);
+			styles.Initalize(hdc, hp, hb, clrb, hf, BACK_COLOR, TEXT_COLOR);
 		}
 
 		FillRect(hdc, &ps.rcPaint, styles.hb);
 
-		int yPos = 60;
-
-		auto& strings = outStrings.GetOutStrings();
 		outStrings.Lock();
-		for (const auto& it : strings)
-		{
+		const auto& strings = outStrings.GetOutStrings();
+
+		int yPos = 60;
+		for (const auto& it : strings) {
 			TextOut(hdc, 0, yPos, it.c_str(), static_cast<int>(it.size()));
 			yPos += 30;
 		}
@@ -137,175 +125,141 @@ LRESULT CALLBACK MainWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 	return 0;
 }
 
-void MainWindow::MouseBIProc(const RAWMOUSE& mouse, DWORD delay)
-{
-	if (recordList.IsRecording())
-	{
-		if (delay != 0)
-		{
+void MainWindow::MouseBIProc(const RAWMOUSE& mouse, DWORD delay) {
+	if (recordList.IsRecording()) {
+		if (delay != 0) {
 			Input* ptr = recordList.GetBack();
 			if (!ptr->AddDelay(static_cast<float>(delay)))
 				recordList.AddEventToRecord<DelayData>(delay);
 		}
 
-		if (mouse.usFlags == MOUSE_MOVE_RELATIVE)
-		{
-			if ((bool)mouse.lLastX || (bool)mouse.lLastY)
+		if (mouse.usFlags == MOUSE_MOVE_RELATIVE) {
+			if (static_cast<bool>(mouse.lLastX) || static_cast<bool>(mouse.lLastY))
 				recordList.AddEventToRecord<MouseMoveData>(mouse.lLastX, mouse.lLastY, false);
 		}
-		else if (mouse.usFlags & MOUSE_MOVE_ABSOLUTE)
-		{
+		else if (mouse.usFlags & MOUSE_MOVE_ABSOLUTE) {
 			recordList.AddEventToRecord<MouseMoveData>(mouse.lLastX, mouse.lLastY, true);
 		}
 
-		if (mouse.usButtonFlags & RI_MOUSE_LEFT_BUTTON_DOWN)
-		{
+		if (mouse.usButtonFlags & RI_MOUSE_LEFT_BUTTON_DOWN) {
 			recordList.AddEventToRecord<MouseClickData>(true, true, false, false);
 		}
-		else if (mouse.usButtonFlags & RI_MOUSE_LEFT_BUTTON_UP)
-		{
+		else if (mouse.usButtonFlags & RI_MOUSE_LEFT_BUTTON_UP) {
 			recordList.AddEventToRecord<MouseClickData>(false, true, false, false);
 		}
 
-		if (mouse.usButtonFlags & RI_MOUSE_RIGHT_BUTTON_DOWN)
-		{
+		if (mouse.usButtonFlags & RI_MOUSE_RIGHT_BUTTON_DOWN) {
 			recordList.AddEventToRecord<MouseClickData>(true, false, true, false);
 		}
-		else if (mouse.usButtonFlags & RI_MOUSE_RIGHT_BUTTON_UP)
-		{
+		else if (mouse.usButtonFlags & RI_MOUSE_RIGHT_BUTTON_UP) {
 			recordList.AddEventToRecord<MouseClickData>(false, false, true, false);
 		}
 
 
-		if (mouse.usButtonFlags & RI_MOUSE_WHEEL)
-		{
-			recordList.AddEventToRecord<MouseScrollData>((short)mouse.usButtonData / WHEEL_DELTA);
+		if (mouse.usButtonFlags & RI_MOUSE_WHEEL) {
+			recordList.AddEventToRecord<MouseScrollData>(static_cast<SHORT>(mouse.usButtonData) / WHEEL_DELTA);
 		}
 
 
-		else if (mouse.usButtonFlags & RI_MOUSE_MIDDLE_BUTTON_DOWN)
-		{
+		else if (mouse.usButtonFlags & RI_MOUSE_MIDDLE_BUTTON_DOWN) {
 			recordList.AddEventToRecord<MouseClickData>(true, false, false, true);
 		}
-		else if (mouse.usButtonFlags & RI_MOUSE_MIDDLE_BUTTON_UP)
-		{
+		else if (mouse.usButtonFlags & RI_MOUSE_MIDDLE_BUTTON_UP) {
 			recordList.AddEventToRecord<MouseClickData>(false, false, false, true);
 		}
 
-		if (mouse.usButtonFlags & RI_MOUSE_BUTTON_4_DOWN) //side button 1
-		{
+		if (mouse.usButtonFlags & RI_MOUSE_BUTTON_4_DOWN) { //side button 1
 			recordList.AddEventToRecord<MouseXClickData>(true, true, false);
 		}
-		else if (mouse.usButtonFlags & RI_MOUSE_BUTTON_4_UP)
-		{
+		else if (mouse.usButtonFlags & RI_MOUSE_BUTTON_4_UP) {
 			recordList.AddEventToRecord<MouseXClickData>(false, true, false);
 		}
 
-		if (mouse.usButtonFlags & RI_MOUSE_BUTTON_5_DOWN) //side button 2
-		{
+		if (mouse.usButtonFlags & RI_MOUSE_BUTTON_5_DOWN) { //side button 2
 			recordList.AddEventToRecord<MouseXClickData>(true, false, true);
 		}
-		else if (mouse.usButtonFlags & RI_MOUSE_BUTTON_5_UP)
-		{
+		else if (mouse.usButtonFlags & RI_MOUSE_BUTTON_5_UP) {
 			recordList.AddEventToRecord<MouseXClickData>(false, false, true);
 		}
 	}
 }
 
-void MainWindow::KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
-{
+//Handle key presses and menu transitions
+void MainWindow::KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay) {
 	if ((kbd.Message == WM_KEYDOWN) || (kbd.Message == WM_SYSKEYDOWN))
 		keys.OnPress(static_cast<unsigned char>(kbd.VKey));
 	else if((kbd.Message == WM_KEYUP) || (kbd.Message == WM_SYSKEYUP))
 		keys.OnRelease(static_cast<unsigned char>(kbd.VKey));
 
-	//if (/*!(bool)(kbd.Flags & RI_KEY_BREAK) && */(kbd.MakeCode == keys.VirtualKeyToScanCode(VK_TAB)))
-	//{
-	//	if (GetAsyncKeyState(VK_TAB) & 0x8000)
-	//	{
-	//		int a = 0;
-	//	}
-	//}
-	//if (/*((kbd.Message == WM_KEYDOWN) || (kbd.Message == WM_SYSKEYDOWN)) && */(kbd.VKey == VK_TAB))
-	//{
-	//	int a = 0;
-	//}
-
 	const int previousRecord = recordList.GetCurrentRecord();
 
-	if (comboRec.GetRecordType() == KeyComboRec::RECORDING)
-	{
-		if (kbd.Message == WM_KEYDOWN)
-		{
+	//change record display strings
+	const auto strings_crec = [&]() {
+		if (previousRecord != RecordList::INVALID) {
+			outStrings.RemoveStringNL(Text::CURRENT_RECORD + std::to_string(previousRecord));
+		}
+
+		const int newRecord = recordList.GetCurrentRecord();
+		if (newRecord != RecordList::INVALID) {
+			outStrings.AddStringNL(Text::CURRENT_RECORD + std::to_string(recordList.GetCurrentRecord()));
+		}
+	};
+
+	if (comboRec.GetRecordType() == KeyComboRec::RECORDING) { // If is recording
+		if (kbd.Message == WM_KEYDOWN) { //if key was pressed add key to combo
 			comboRec.AddVKey(static_cast<TCHAR>(kbd.VKey));
 			return;
 		}
-		else if (comboRec.HasRecorded())
-		{
+		else if (comboRec.HasRecorded()) {
 			comboRec.Stop();
-			if (!recordList.AddRecord(comboRec.GetVKeys()))
-			{
+			//add record with toggle keys
+			if (!recordList.AddRecord(comboRec.GetVKeys())) { // If record already exists start recording
 				comboRec.StartRecording();
-				return;
+			}
+			else { //if record does not already exist
+				outStrings.RemoveStringNL(Text::ADDING_RECORD);
+				strings_crec();
+
+				Redraw();
 			}
 
-			outStrings.Lock();
-			outStrings.RemoveStringNL(ADDINGRECORD);
-
-			outStrings.RemoveStringNL(CURRENTRECORD + std::to_string(previousRecord));
-
-			outStrings.AddStringNL(CURRENTRECORD + std::to_string(recordList.GetCurrentRecord()));
-			outStrings.Unlock();
-
-			Redraw();
 			return;
 		}
 	}
-	else if (comboRec.GetRecordType() == KeyComboRec::DELETING)
-	{
-		if (kbd.Message == WM_KEYDOWN)
-		{
+	else if (comboRec.GetRecordType() == KeyComboRec::DELETING) { // If is deleting
+		if (kbd.Message == WM_KEYDOWN) { //if key was pressed add key to combo
 			comboRec.AddVKey(static_cast<TCHAR>(kbd.VKey));
 			return;
 		}
-		else if (comboRec.HasRecorded())
-		{
+		else if (comboRec.HasRecorded()) {
 			comboRec.Stop();
 
-			if (!recordList.DeleteRecord(comboRec.GetVKeys()))
-			{
+			if (!recordList.DeleteRecord(comboRec.GetVKeys())) {
 				return;
 			}
 
-			outStrings.Lock();
-			outStrings.RemoveStringNL(DELETINGRECORD);
-
-			outStrings.RemoveStringNL(CURRENTRECORD + std::to_string(previousRecord));
-
-			outStrings.AddStringNL(CURRENTRECORD + std::to_string(recordList.GetCurrentRecord()));
-			outStrings.Unlock();
+			outStrings.RemoveStringNL(Text::DELETING_RECORD);
+			strings_crec();
 
 			Redraw();
 			return;
 		}
 	}
 
-	// Select Record
-	if (keys.IsPressedCombo({ VK_CONTROL, VK_F1 }))
-	{
-		if (recordList.IsRecording())
-		{
-			// Remove CTRL + F1 release from list
+	// Toggle Recording
+	if (keys.IsPressedCombo({ VK_CONTROL, VK_F1 })) {
+		//If is recording, stop recording
+		if (recordList.IsRecording()) {
+			// Remove CTRL + F1 key combo release from list
 			recordList.PopBack();
 			recordList.PopBack();
-
 			recordList.Save();
 
-			outStrings.RemoveString(RECORDING);
+			outStrings.RemoveString(Text::RECORDING);
 			Redraw();
 		}
-		else if (recordList.GetCurrentRecord() != RecordList::INVALID)
-		{
+		//if a record is selected, start recording
+		else if (recordList.GetCurrentRecord() != RecordList::INVALID) {
 			ignoreKeys.SetKeys({ { VK_CONTROL, WM_KEYUP, true }, { VK_F1, WM_KEYUP, true } });
 
 			const auto metrics = GetMetricsXY();
@@ -313,10 +267,10 @@ void MainWindow::KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 			//Set starting mouse position
 			POINT pt;
 			GetCursorPos(&pt);
-			int mx = (pt.x * USHRT_MAX) / metrics.first;
-			int my = (pt.y * USHRT_MAX) / metrics.second;
+			const int mx = (pt.x * USHRT_MAX) / metrics.first;
+			const int my = (pt.y * USHRT_MAX) / metrics.second;
 
-			outStrings.AddString(RECORDING);
+			outStrings.AddString(Text::RECORDING);
 			Redraw();
 
 			recordList.StartRecording();
@@ -326,35 +280,23 @@ void MainWindow::KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 	}
 
 	// Simulate Record
-	if (keys.IsPressedCombo({ VK_CONTROL, VK_F2 }))
-	{
-		if (recordList.HasRecorded() && !recordList.IsRecording())
-		{
-			outStrings.AddString(SIMUALTINGRECORD);
+	if (keys.IsPressedCombo({ VK_CONTROL, VK_F2 })) {
+		if (recordList.HasRecorded() && !recordList.IsRecording()) {
+			outStrings.AddString(Text::SIMUALTING_RECORD);
 			Redraw();
 
 			recordList.SimulateRecord();
 
-			outStrings.RemoveString(SIMUALTINGRECORD);
+			outStrings.RemoveString(Text::SIMUALTING_RECORD);
 			Redraw();
-		}
-		return;
-	}
-
-	// Exit program
-	if (keys.IsPressedCombo({ VK_CONTROL, /*VK_ESCAPE*/VK_DOWN })) // for some reason a VK_ESCAPE with WM_KEYDOWN does not reach the message queue even with raw_input
-	{
-		if (!(recordList.IsRecording() || recordList.IsSimulating()))
-		{
-			Close();
 		}
 		return;
 	}
 
 	// Add Record
-	if (keys.IsPressedCombo({ VK_CONTROL, VK_MENU, Keys::CharToVirtualKey(_T('A')) }))
-	{
-		outStrings.AddString(ADDINGRECORD);
+	if (keys.IsPressedCombo({ VK_CONTROL, VK_MENU, Keys::CharToVirtualKey(_T('A')) })) {
+		outStrings.AddString(Text::ADDING_RECORD);
+		outStrings.RemoveStringNL(Text::DELETING_RECORD);
 		Redraw();
 
 		comboRec.StartRecording();
@@ -362,43 +304,43 @@ void MainWindow::KbdBIProc(const RAWKEYBOARD& kbd, DWORD delay)
 	}
 
 	// Delete record
-	if (keys.IsPressedCombo({ VK_CONTROL, VK_MENU, Keys::CharToVirtualKey(_T('D')) }))
-	{
-		outStrings.AddString(DELETINGRECORD);
+	if (keys.IsPressedCombo({ VK_CONTROL, VK_MENU, Keys::CharToVirtualKey(_T('D')) })) {
+		outStrings.AddString(Text::DELETING_RECORD);
+		outStrings.RemoveStringNL(Text::ADDING_RECORD);
 		Redraw();
 
 		comboRec.StartDeleting();
 		return;
 	}
 
-	if (recordList.SelectRecord(kbd) != RecordList::INVALID)
-	{
-		if (previousRecord != recordList.GetCurrentRecord())
-		{
-			outStrings.Lock();
-			if (previousRecord != RecordList::INVALID)
-				outStrings.RemoveStringNL(CURRENTRECORD + std::to_string(previousRecord));
+	// Exit program
+	if (keys.IsPressedCombo({ VK_CONTROL, /*VK_ESCAPE*/VK_DOWN })) { // For some reason a VK_ESCAPE with WM_KEYDOWN does not reach the message queue even with raw_input
+		if (!(recordList.IsRecording() || recordList.IsSimulating())) {
+			Close();
+		}
+		return;
+	}
 
-			outStrings.AddStringNL(CURRENTRECORD + std::to_string(recordList.GetCurrentRecord()));
-			outStrings.Unlock();
+	// Select record
+	if (recordList.SelectRecord(kbd) != RecordList::INVALID) {
+		if (previousRecord != recordList.GetCurrentRecord()) {
+			strings_crec();
 
 			Redraw();
 		}
 	}
 
-	if (recordList.IsRecording())
-	{
-		if (!ignoreKeys.KeyIgnored(kbd))
-		{
-			if (delay != 0)
-			{
+	// If recording
+	if (recordList.IsRecording()) {
+		if (!ignoreKeys.KeyIgnored(kbd)) { // And key is not ignored (keys used to access menu)
+			if (delay != 0) {
 				Input* ptr = recordList.GetBack();
-				if (!ptr->AddDelay(static_cast<float>(delay)))
+				if (ptr && !ptr->AddDelay(static_cast<float>(delay)))
 					recordList.AddEventToRecord<DelayData>(delay);
 			}
 
-			recordList.AddEventToRecord<KbdData>(kbd.MakeCode, !(bool)(kbd.Flags & RI_KEY_BREAK), true, (bool)(kbd.Flags & RI_KEY_E0));
-			//recordList.AddEventToRecord<KbdData>(kbd.VKey, (kbd.Message == WM_KEYDOWN) || (kbd.Message == WM_SYSKEYDOWN), false);
+			//add scan code (key press) to recordList
+			recordList.AddEventToRecord<KbdData>(kbd.MakeCode, !static_cast<bool>(kbd.Flags & RI_KEY_BREAK), true, static_cast<bool>(kbd.Flags & RI_KEY_E0));
 		}
 	}
 }
