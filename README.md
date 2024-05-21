@@ -23,7 +23,7 @@ Exiting Program:
 Menu and controls are also displayed on the overlapped menu.
 
 ## Unit Testing
-Unit testing is done using Google Test.
+- Unit testing is done using Google Test.
 
 ## Tooling
 - C++
