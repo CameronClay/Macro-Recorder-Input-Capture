@@ -29,3 +29,4 @@ Unit testing is done using Google Test.
 - C++
 - Win32 API
 - Google Test
+- Visual Studio
